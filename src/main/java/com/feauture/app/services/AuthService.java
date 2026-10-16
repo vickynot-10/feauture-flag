@@ -19,8 +19,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public ApiResponse<Void> signUp(AuthRequest.SignUp request) {
+    public String signUp(AuthRequest.SignUp request) {
 
         String email = request.email().trim().toLowerCase();
 
@@ -36,13 +37,15 @@ public class AuthService {
         appuser.setName(username);
         appuser.setPassword(passwordEncoder.encode(request.password()));
 
-        userRepository.save(appuser);
+        AppUser savedUser = userRepository.save(appuser);
 
-        return ApiResponse.success("User Created Successfully !", null);
+        String userID = String.valueOf(savedUser.getId());
+
+        return jwtService.generateToken(userID);
 
     }
 
-    public ApiResponse<Void> signIn(AuthRequest.SignIn request) {
+    public String signIn(AuthRequest.SignIn request) {
         String email = request.email().trim().toLowerCase();
 
         AppUser userData = userRepository.findByEmail(email)
@@ -58,7 +61,9 @@ public class AuthService {
             throw invalidException();
         }
 
-        return ApiResponse.success("Logged In Successfully !", null);
+        String userID = String.valueOf(userData.getId());
+
+        return jwtService.generateToken(userID);
 
     }
 

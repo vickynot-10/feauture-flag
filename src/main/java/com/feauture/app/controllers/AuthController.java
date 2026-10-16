@@ -1,6 +1,10 @@
 package com.feauture.app.controllers;
 
+import org.springframework.http.HttpHeaders;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,15 +27,29 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Void> signUp(@Valid @RequestBody AuthRequest.SignUp request) {
-        return authService.signUp(request);
+    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody AuthRequest.SignUp request) {
+
+        String token = authService.signUp(request);
+
+        ResponseCookie cookie = ResponseCookie.from("feature_token", token).httpOnly(true).secure(false).path("/")
+                .maxAge(24 * 60 * 60).sameSite("Lax").build();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success("Signed Up Successfully !", null));
+
     }
 
     @PostMapping("/sign-in")
 
-    public ApiResponse<Void> signIn(@Valid @RequestBody AuthRequest.SignIn request) {
+    public ResponseEntity<ApiResponse<Void>> signIn(@Valid @RequestBody AuthRequest.SignIn request) {
 
-        return authService.signIn(request);
+        String token = authService.signIn(request);
+
+        ResponseCookie cookie = ResponseCookie.from("feature_token", token).httpOnly(true).secure(false).path("/")
+                .maxAge(24 * 60 * 60).sameSite("Lax").build();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success("Logged In Successfully !", null));
     }
 
 }
