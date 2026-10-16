@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.feauture.app.constants.AppConstants;
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AuthRequest;
 import com.feauture.app.services.AuthService;
@@ -31,7 +32,8 @@ public class AuthController {
 
         String token = authService.signUp(request);
 
-        ResponseCookie cookie = ResponseCookie.from("feature_token", token).httpOnly(true).secure(false).path("/")
+        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
+                .secure(AppConstants.IN_PRODUCTION).path("/")
                 .maxAge(24 * 60 * 60).sameSite("Lax").build();
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -45,7 +47,8 @@ public class AuthController {
 
         String token = authService.signIn(request);
 
-        ResponseCookie cookie = ResponseCookie.from("feature_token", token).httpOnly(true).secure(false).path("/")
+        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
+                .secure(AppConstants.IN_PRODUCTION).path("/")
                 .maxAge(24 * 60 * 60).sameSite("Lax").build();
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -55,9 +58,9 @@ public class AuthController {
     @PostMapping("/sign-out")
     public ResponseEntity<ApiResponse<Void>> signOut() {
 
-        ResponseCookie cookie = ResponseCookie.from("auth_token", "")
+        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(AppConstants.IN_PRODUCTION)
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")
