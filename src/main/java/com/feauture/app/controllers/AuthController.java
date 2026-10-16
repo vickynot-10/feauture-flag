@@ -52,4 +52,20 @@ public class AuthController {
                 .body(ApiResponse.success("Logged In Successfully !", null));
     }
 
+    @PostMapping("/sign-out")
+    public ResponseEntity<ApiResponse<Void>> signOut() {
+
+        ResponseCookie cookie = ResponseCookie.from("auth_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success("Logged Out Successfully!", null));
+    }
+
 }
