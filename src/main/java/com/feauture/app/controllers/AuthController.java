@@ -24,51 +24,50 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+        private final AuthService authService;
 
-    @PostMapping("/sign-up")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody AuthRequest.SignUp request) {
+        @PostMapping("/sign-up")
+        @ResponseStatus(HttpStatus.CREATED)
+        public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody AuthRequest.SignUp request) {
 
-        String token = authService.signUp(request);
+                String token = authService.signUp(request);
+                ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
+                                .secure(AppConstants.IN_PRODUCTION).path("/")
+                                .maxAge(24 * 60 * 60).sameSite("Lax").build();
 
-        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
-                .secure(AppConstants.IN_PRODUCTION).path("/")
-                .maxAge(24 * 60 * 60).sameSite("Lax").build();
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(ApiResponse.success("Signed Up Successfully !", null));
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.success("Signed Up Successfully !", null));
+        }
 
-    }
+        @PostMapping("/sign-in")
 
-    @PostMapping("/sign-in")
+        public ResponseEntity<ApiResponse<Void>> signIn(@Valid @RequestBody AuthRequest.SignIn request) {
 
-    public ResponseEntity<ApiResponse<Void>> signIn(@Valid @RequestBody AuthRequest.SignIn request) {
+                String token = authService.signIn(request);
 
-        String token = authService.signIn(request);
+                ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
+                                .secure(AppConstants.IN_PRODUCTION).path("/")
+                                .maxAge(24 * 60 * 60).sameSite("Lax").build();
 
-        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, token).httpOnly(true)
-                .secure(AppConstants.IN_PRODUCTION).path("/")
-                .maxAge(24 * 60 * 60).sameSite("Lax").build();
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(ApiResponse.success("Logged In Successfully !", null));
+        }
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.success("Logged In Successfully !", null));
-    }
+        @PostMapping("/sign-out")
+        public ResponseEntity<ApiResponse<Void>> signOut() {
 
-    @PostMapping("/sign-out")
-    public ResponseEntity<ApiResponse<Void>> signOut() {
+                ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, "")
+                                .httpOnly(true)
+                                .secure(AppConstants.IN_PRODUCTION)
+                                .path("/")
+                                .maxAge(0)
+                                .sameSite("Lax")
+                                .build();
 
-        ResponseCookie cookie = ResponseCookie.from(AppConstants.COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(AppConstants.IN_PRODUCTION)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.success("Logged Out Successfully!", null));
-    }
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(ApiResponse.success("Logged Out Successfully!", null));
+        }
 
 }
