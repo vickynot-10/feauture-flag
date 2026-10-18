@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,8 +29,8 @@ public class AppController {
     private final FeautureApp feautureApp;
 
     @GetMapping
-    public String getApps(@Valid AppRequest.PageQuery query) {
-        return new String();
+    public ApiResponse<Map<String, Object>> getApps(@Valid AppRequest.PageQuery query) {
+        return feautureApp.getApps(query);
     }
 
     @PostMapping

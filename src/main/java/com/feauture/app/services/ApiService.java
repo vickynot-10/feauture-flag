@@ -1,7 +1,13 @@
 package com.feauture.app.services;
 
 import java.time.Instant;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -23,6 +29,20 @@ public class ApiService {
 
     private final ApplicationRepository applicationRepository;
     private final ApiRepository apiRepository;
+
+    public ApiResponse<Map<String, Object>> getApis(ApiRequest.PageQuery query) {
+        Pageable page = PageRequest.of(query.page() - 1, query.limit(), Sort.by("updated_at").descending());
+        Specification<AppApiKeys> specs = null;
+        if (query.search() != null) {
+            specs = (root, cq, cb) -> cb.like(cb.lower(root.get("name")), "%" + query.search().toLowerCase() + "%");
+        }
+
+        Page<AppApiKeys> result = apiRepository.findAll(specs, page);
+        Map<String, Object> data = Map.of(
+                "list", result.getContent(),
+                "total", result.getTotalElements());
+        return ApiResponse.success("Fetcted Successfully !", data);
+    }
 
     public ApiResponse<Void> saveApi(ApiRequest.SaveApi request) {
 
