@@ -28,4 +28,10 @@ public interface ApplicationRepository
     @Modifying
     @Query("DELETE FROM AppApplications a WHERE a.id = :id")
     int deleteApp(@Param("id") Long id);
+
+    @Query("""
+            SELECT COUNT(a) > 0 FROM AppApplications a WHERE a.id = :id AND a.status = true
+            """)
+    boolean existsByIDAndStatus(@Param("id") Long id);
+
 }
