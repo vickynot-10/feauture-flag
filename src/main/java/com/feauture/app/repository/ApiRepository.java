@@ -28,7 +28,7 @@ public interface ApiRepository extends JpaRepository<AppApiKeys, Long>, JpaSpeci
 
     @Modifying
     @Query("""
-                UPDATE AppApiKeys a SET a.status = NOT a.status , a.updated_at = :updated_at WHERE a.id = :id
+            UPDATE AppApiKeys a SET a.status = CASE WHEN a.status = true THEN false ELSE true END, a.updated_at = :updated_at WHERE a.id = :id
             """)
     int updateStatusApi(@Param("id") Long id, @Param("updated_at") Instant updated_at);
 

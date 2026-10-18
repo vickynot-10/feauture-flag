@@ -3,6 +3,8 @@ package com.feauture.app.entity;
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,8 +37,11 @@ public class AppApiKeys {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "fk_app_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private AppApplications app;
 
+    @Column(nullable = false)
+    private boolean status = true;
     @CreationTimestamp
     @Column(updatable = false)
     private Instant created_at;

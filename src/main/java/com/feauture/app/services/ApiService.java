@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.feauture.app.dto.ApiRequest;
@@ -12,16 +13,16 @@ import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.entity.AppApiKeys;
 import com.feauture.app.repository.ApiRepository;
 import com.feauture.app.repository.ApplicationRepository;
+import com.feauture.app.util.ApiKeyUtil;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ApiService {
 
-    final ApplicationRepository applicationRepository;
-    final ApiRepository apiRepository;
+    private final ApplicationRepository applicationRepository;
+    private final ApiRepository apiRepository;
 
     public ApiResponse<Void> saveApi(ApiRequest.SaveApi request) {
 
@@ -31,10 +32,14 @@ public class ApiService {
             throw this.ThrowError(HttpStatus.NOT_FOUND, "Invalid App ID");
         }
 
+        String rawKey = ApiKeyUtil.generateKey();
+
         AppApiKeys app = new AppApiKeys();
         app.setName(request.name());
+        app.setKey(ApiKeyUtil.hashKey(rawKey));
         app.setUpdated_at(Instant.now());
-
+        app.setApp(applicationRepository.getReferenceById(request.app_id()));
+        app.setStatus(true);
         apiRepository.save(app);
         return ApiResponse.success("API Key Saved Successfully !", null);
 
@@ -43,12 +48,13 @@ public class ApiService {
     @Transactional
     public ApiResponse<Void> updateApi(ApiRequest.EditApi request) {
 
-        boolean isExists = applicationRepository.existsByIDAndStatus(request.id());
+        boolean isExists = applicationRepository.existsByIDAndStatus(request.app_id());
 
         if (!isExists) {
             throw this.ThrowError(HttpStatus.NOT_FOUND, "Invalid App ID");
         }
-        int response = apiRepository.updateApp(request.id(), request.name(), request.app_id(), Instant.now());
+        int response = apiRepository.updateApp(request.id(), request.name(),
+                applicationRepository.getReferenceById(request.app_id()), Instant.now());
 
         if (response <= 0) {
             throw this.ThrowError(HttpStatus.NOT_FOUND, "No API key is found !");

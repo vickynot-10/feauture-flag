@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiRequest;
+import com.feauture.app.dto.ApiResponse;
+import com.feauture.app.services.ApiService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -21,24 +23,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/api-apps")
 public class ApiController {
 
+    private final ApiService apiService;
+
     @PostMapping
-    public String saveApi(@RequestBody @Valid ApiRequest.SaveApi request) {
-        return "ok";
+    public ApiResponse<Void> saveApi(@RequestBody @Valid ApiRequest.SaveApi request) {
+        return apiService.saveApi(request);
     }
 
     @PutMapping
-    public String editApi(@RequestBody @Valid ApiRequest.EditApi request) {
-        return "ok";
+    public ApiResponse<Void> editApi(@RequestBody @Valid ApiRequest.EditApi request) {
+        return apiService.updateApi(request);
     }
 
     @PatchMapping
-    public String statusUpdateApi(@RequestBody @Valid ApiRequest.StatusUpdate request) {
-        return "ok";
+    public ApiResponse<Void> statusUpdateApi(@RequestBody @Valid ApiRequest.StatusUpdate request) {
+        return apiService.updateStatusApi(request);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteApi(@PathVariable @Positive Long id) {
-        return "ok";
+    public ApiResponse<Void> deleteApi(@PathVariable @Positive Long id) {
+        return apiService.deleteApi(id);
     }
 
 }
