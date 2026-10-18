@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @RestController
@@ -23,13 +25,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class AppController {
     private final FeautureApp feautureApp;
 
+    @GetMapping
+    public String getApps(@Valid AppRequest.PageQuery query) {
+        return new String();
+    }
+
     @PostMapping
     public ApiResponse<Void> saveApp(@Valid @RequestBody AppRequest.SaveApp request) {
 
         return feautureApp.saveApp(request);
     }
 
-    @PutMapping("/")
+    @PutMapping
     public ApiResponse<Void> editApp(@Valid @RequestBody AppRequest.EditApp request) {
 
         return feautureApp.editApp(request);
@@ -41,7 +48,7 @@ public class AppController {
         return feautureApp.deleteApp(id);
     }
 
-    @PatchMapping("/")
+    @PatchMapping
     public ApiResponse<Void> updateStatusApp(@Valid @RequestBody AppRequest.StatusUpdateApp request) {
 
         return feautureApp.updateStatusApp(request);

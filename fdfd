@@ -1,0 +1,39 @@
+Must have
+
+1. Auth and tenant setup
+
+Login (JWT or simple email/password) and a tenant/project switcher.
+Environment tabs: dev / staging / prod. Flags are scoped per environment.
+API key page: generate and revoke SDK keys per environment (show the key once, store only the hash).
+
+2. Flag list
+
+Table with flag key, on/off toggle, environment, last updated, and who changed it.
+Search and filter by tag or status.
+Quick toggle with a confirm dialog on prod.
+
+3. Flag detail / editor (the main screen)
+
+Basic info: key, description, type (boolean, string, number, JSON).
+Rules builder: add rows like attribute | operator | value → serve X, with drag to reorder since rule order matters.
+Percentage rollout slider with a variant split editor (A 50% / B 50%, must sum to 100).
+Default value and “off” value.
+Save creates a new version. Handle the 409 conflict case: if someone else edited, show “flag changed, reload and retry”. This shows off your optimistic locking.
+
+4. Version history and audit log
+
+Timeline of versions per flag with a diff view (old vs new JSON).
+Rollback to version N button, which creates a new version and doesn’t delete anything.
+Global audit log page with filters by user, flag and date.
+
+5. Flag tester (playground)
+
+Input a sample user context (user_id, country, plan) and see which value is served and which rule matched.
+This is the best demo feature. It calls your evaluation engine through an API, and interviewers can try it live.
+Nice to have
+Live updates: an SSE connection so the dashboard updates when another admin changes a flag. It also demonstrates your propagation layer visually.
+Connected SDK instances: a list of clients with their last sync time and flag version, so you can see stale clients.
+Exposure/metrics view: evaluation counts per variant as simple charts. Don’t build statistical analysis.
+Environment compare: diff of flags between staging and prod.
+Skip
+Fancy analytics dashboards, user management with roles beyond admin/viewer, billing pages. They eat time and add nothing to the story.
