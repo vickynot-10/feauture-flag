@@ -30,7 +30,7 @@ public class FlagService {
     private final AppFlagVersionRepository appFlagVersionRepository;
 
     @Transactional
-    public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request) {
+    public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
         if (appFlagRepository.existsByApp_IdAndFlagKey(request.app(), request.flagKey())) {
             throw ThrowError(HttpStatus.CONFLICT, "A Flag with similar Key and App Already Exists !");
         }
@@ -39,37 +39,35 @@ public class FlagService {
         app.setFlagKey(request.flagKey());
         app.setApp(applicationRepository.getReferenceById(request.app()));
         appFlagRepository.save(app);
-        insertVersion(app, 1, request.definition());
+        insertVersion(app, 1, request.definition(), userId);
         return ApiResponse.success("Flag Created Successfully !", null);
     }
 
     @Transactional
-    public ApiResponse<Void> editFlag(FlagRequest.editFlag request) {
-        boolean isExists = appFlagRepository.existsById(request.id());
-        if (!isExists) {
-            throw ThrowError(HttpStatus.CONFLICT, "Flag is Not Found !");
-        }
+    public ApiResponse<Void> editFlag(FlagRequest.editFlag request, Long userId) {
 
         int nextversion = request.expectedVersion() + 1;
         int updated = appFlagRepository.insertVersion(request.id(), request.expectedVersion(), nextversion,
                 Instant.now());
 
         if (updated == 0) {
+            if (!appFlagRepository.existsById(request.id())) {
+                throw ThrowError(HttpStatus.NOT_FOUND, "Flag is Not Found !");
+            }
             throw ThrowError(HttpStatus.CONFLICT, "Flag was changed by someone else, reload and retry !");
-
         }
-        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.definition());
+        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.definition(), userId);
 
         return ApiResponse.success("Flag updated Successfully !", null);
     }
 
-    private void insertVersion(AppFlags flag, int version, Map<String, Object> definition) {
+    private void insertVersion(AppFlags flag, int version, Map<String, Object> definition, Long userId) {
 
         AppFlagVersions appVersion = new AppFlagVersions();
         appVersion.setVersion(version);
         appVersion.setFlag(flag);
         appVersion.setDefinition(definition);
-        // appVersion.setCreatedBy(userRepository.getReferenceById(userId));
+        appVersion.setCreatedBy(userRepository.getReferenceById(userId));
         appFlagVersionRepository.save(appVersion);
 
     }
