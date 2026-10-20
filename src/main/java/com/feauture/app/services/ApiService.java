@@ -45,7 +45,7 @@ public class ApiService {
         return ApiResponse.success("Fetcted Successfully !", data);
     }
 
-    public ApiResponse<Void> saveApi(ApiRequest.SaveApi request) {
+    public ApiResponse<Map<String, String>> saveApi(ApiRequest.SaveApi request) {
 
         boolean isExists = applicationRepository.existsByIDAndStatus(request.app_id());
 
@@ -62,7 +62,7 @@ public class ApiService {
         app.setApp(applicationRepository.getReferenceById(request.app_id()));
         app.setStatus(true);
         apiRepository.save(app);
-        return ApiResponse.success("API Key Saved Successfully !", null);
+        return ApiResponse.success("API Key Saved Successfully !", Map.of("key", rawKey));
 
     }
 
