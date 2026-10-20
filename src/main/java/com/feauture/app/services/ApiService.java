@@ -30,6 +30,7 @@ public class ApiService {
     private final ApplicationRepository applicationRepository;
     private final ApiRepository apiRepository;
 
+    @Transactional(readOnly = true)
     public ApiResponse<Map<String, Object>> getApis(ApiRequest.PageQuery query) {
         Pageable page = PageRequest.of(query.page() - 1, query.limit(), Sort.by("updated_at").descending());
         Specification<AppApiKeys> specs = null;
