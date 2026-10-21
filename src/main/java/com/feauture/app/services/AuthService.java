@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AuthRequest;
@@ -29,7 +28,7 @@ public class AuthService {
         String email = request.email().trim().toLowerCase();
 
         if (userRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+            throw ApiResponse.error(HttpStatus.CONFLICT, "Email already registered");
         }
 
         String username = request.name().trim();
@@ -52,7 +51,7 @@ public class AuthService {
         String email = request.email().trim().toLowerCase();
 
         AppUser userData = userRepository.findByEmail(email)
-                .orElseThrow(this::invalidException);
+                .orElseThrow(() -> ApiResponse.error(HttpStatus.UNAUTHORIZED, "Invalid Credentails !"));
 
         String password = request.password();
 
@@ -61,7 +60,7 @@ public class AuthService {
         boolean isMatch = passwordEncoder.matches(password, hashedPassword);
 
         if (!isMatch) {
-            throw invalidException();
+            throw ApiResponse.error(HttpStatus.CONFLICT, "Invalid Credentails");
         }
 
         String userID = String.valueOf(userData.getId());
@@ -70,7 +69,4 @@ public class AuthService {
 
     }
 
-    private ResponseStatusException invalidException() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Credentials !");
-    }
 }

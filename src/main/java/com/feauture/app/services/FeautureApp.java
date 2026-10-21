@@ -9,7 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.feauture.app.constants.AppConstants;
 import com.feauture.app.dto.ApiResponse;
@@ -66,7 +65,7 @@ public class FeautureApp {
     public ApiResponse<Void> deleteApp(Long id) {
         final int response = applicationRepository.deleteApp(id);
         if (response == 0) {
-            throw invalidException();
+            throw ApiResponse.error(HttpStatus.NOT_FOUND, "App not found !");
         }
         return ApiResponse.success("Application Deleted Successfully !", null);
     }
@@ -75,13 +74,10 @@ public class FeautureApp {
     public ApiResponse<Void> updateStatusApp(AppRequest.StatusUpdateApp request) {
         final int response = applicationRepository.updateStatusApp(request.id(), request.status());
         if (response == 0) {
-            throw invalidException();
+            throw ApiResponse.error(HttpStatus.NOT_FOUND, "App not found !");
         }
 
         return ApiResponse.success("Application Status updated Successfully !", null);
     }
 
-    private ResponseStatusException invalidException() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Application Not Found !");
-    }
 }

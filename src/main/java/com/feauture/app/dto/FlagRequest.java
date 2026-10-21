@@ -2,6 +2,7 @@ package com.feauture.app.dto;
 
 import java.util.Map;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -10,6 +11,18 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class FlagRequest {
+
+        public record PageQuery(
+                        @Min(value = 1, message = "Minimum Page is 1") Integer page,
+                        @Min(value = 1, message = "Minimum Limit is 1") @Max(value = 100, message = "Maximum Limit is 100") Integer limit,
+                        @Size(max = 30, message = "Search must be max 30 characters") String search) {
+
+                public PageQuery {
+                        page = page == null ? 1 : page;
+                        limit = limit == null ? 10 : limit;
+                        search = search == null || search.isBlank() ? null : search.trim();
+                }
+        }
 
         public record saveFlag(
                         @NotNull(message = "App is Required") Long app,
@@ -23,7 +36,8 @@ public class FlagRequest {
                         @NotEmpty(message = "Definition is Required") Map<String, Object> definition) {
         }
 
-        public record updateStatusFlag(
+        public record idFlagRequest(
                         @NotNull(message = "Edit ID is Required") Long id) {
         }
+
 }

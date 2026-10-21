@@ -1,12 +1,15 @@
 package com.feauture.app.dto;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 public record ApiResponse<T>(boolean success, String message, T data) {
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>(true, message, data);
     }
 
-    public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
+    public static ResponseStatusException error(HttpStatus status, String msg) {
+        return new ResponseStatusException(status, msg);
     }
 }

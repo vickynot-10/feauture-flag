@@ -2,11 +2,11 @@ package com.feauture.app.interceptor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.util.WebUtils;
 
 import com.feauture.app.constants.AppConstants;
+import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.services.JwtService;
 
 import jakarta.servlet.http.Cookie;
@@ -27,12 +27,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         Cookie cookie = WebUtils.getCookie(request, AppConstants.COOKIE_NAME);
         if (cookie == null || cookie.getValue().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
-
+            throw ApiResponse.error(HttpStatus.UNAUTHORIZED, "Not Logged in");
         }
 
         String userId = jwtService.verifyToken(cookie.getValue())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token"));
+                .orElseThrow(() -> ApiResponse.error(HttpStatus.UNAUTHORIZED, "Invalid or expired token"));
 
         request.setAttribute("userId", Long.valueOf(userId));
         return true;
