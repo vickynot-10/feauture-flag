@@ -13,4 +13,11 @@ public class Bucket {
         return Math.floorMod(hash, AppConstants.MAX_BUCKETS);
     }
 
+    public static void main(String[] args) {
+        System.out.println(bucket("new_checkout", "s1", "user-1"));
+        System.out.println(bucket("new_checkout", "s1", "user-1"));
+        System.out.println(bucket("new_checkout", "s1", "user-2"));
+        System.out.println(bucket("dark_mode", "s1", "user-1"));
+    }
+
 }
