@@ -14,9 +14,8 @@ public final class ConditionMatcher {
         String attribute = condition.attribute();
         String matchInUser = context.get(attribute);
 
-        if (matchInUser == null || condition.values().size() <= 0 || condition.values() == null
-                || condition.values().isEmpty()
-                || matchInUser.isEmpty()) {
+        if (matchInUser == null || condition.values() == null
+                || condition.values().isEmpty() || matchInUser.isEmpty()) {
             return false;
         }
 
