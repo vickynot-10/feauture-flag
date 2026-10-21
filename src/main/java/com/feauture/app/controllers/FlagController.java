@@ -1,5 +1,7 @@
 package com.feauture.app.controllers;
 
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +20,7 @@ import com.feauture.app.services.FlagService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,6 +28,11 @@ import lombok.RequiredArgsConstructor;
 public class FlagController {
 
     private final FlagService flagService;
+
+    @GetMapping
+    public ApiResponse<Map<String, Object>> getFlags(@Valid FlagRequest.PageQuery request) {
+        return flagService.getFlags(request);
+    }
 
     @PostMapping
     public ApiResponse<Void> saveFlag(@Valid @RequestBody FlagRequest.saveFlag request,

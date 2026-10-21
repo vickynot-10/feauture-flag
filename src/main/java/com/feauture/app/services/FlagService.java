@@ -3,6 +3,11 @@ package com.feauture.app.services;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +34,23 @@ public class FlagService {
 
     private final ApplicationRepository applicationRepository;
     private final AppFlagVersionRepository appFlagVersionRepository;
+
+    @Transactional(readOnly = true)
+    public ApiResponse<Map<String, Object>> getFlags(FlagRequest.PageQuery query) {
+        Pageable page = PageRequest.of(query.page() - 1, query.limit(), Sort.by("updated_at").descending());
+        Specification<AppFlags> specs = null;
+        if (query.search() != null && !query.search().isBlank()) {
+            specs = (root, cq, cb) -> cb.like(cb.lower(root.get("flag_key")), "%" + query.search().toLowerCase() + "%");
+        }
+        Page<AppFlags> result = appFlagRepository.findAll(specs, page);
+
+        Map<String, Object> res = Map.of(
+                "total", result.getTotalElements(),
+                "list", result.getContent());
+
+        return ApiResponse.success("Fetched Successfully !", res);
+
+    }
 
     @Transactional
     public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
