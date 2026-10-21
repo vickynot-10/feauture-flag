@@ -56,7 +56,7 @@ public class FeautureApp {
     public ApiResponse<Void> editApp(AppRequest.EditApp request) {
         final int response = applicationRepository.updateApp(request.id(), request.name(), request.environment());
         if (response == 0) {
-            throw invalidException();
+            throw ApiResponse.error(HttpStatus.NOT_FOUND, "App not found !");
         }
         return ApiResponse.success("Application updated Successfully !", null);
     }

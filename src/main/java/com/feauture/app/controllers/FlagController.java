@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/flags")
+
 public class FlagController {
 
     private final FlagService flagService;

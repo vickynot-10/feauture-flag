@@ -12,4 +12,7 @@ public class AppConstants {
     public static final int TESTING = 3;
     public static final int PRODUCTION = 4;
 
+    // ENGINE
+    public static final int MAX_BUCKETS = 10000;
+
 }
