@@ -9,29 +9,29 @@ import org.springframework.data.repository.query.Param;
 import com.feauture.app.entity.AppApplications;
 
 public interface ApplicationRepository
-        extends JpaRepository<AppApplications, Long>, JpaSpecificationExecutor<AppApplications> {
+                extends JpaRepository<AppApplications, Long>, JpaSpecificationExecutor<AppApplications> {
 
-    @Modifying
+        @Modifying
 
-    @Query("""
-                UPDATE AppApplications a SET a.name = :name ,a.environment = :environment WHERE a.id = :id
+        @Query("""
+                            UPDATE AppApplications a SET a.name = :name ,a.environment = :environment WHERE a.id = :id
 
-            """)
-    int updateApp(@Param("id") Long id, @Param("name") String name, @Param("environment") Integer environment);
+                        """)
+        int updateApp(@Param("id") Long id, @Param("name") String name, @Param("environment") Integer environment);
 
-    @Modifying
-    @Query("""
-                UPDATE AppApplications a SET a.status = :status WHERE a.id = :id
-            """)
-    int updateStatusApp(@Param("id") Long id, @Param("status") boolean status);
+        @Modifying
+        @Query("""
+                            UPDATE AppApplications a SET a.status = NOT a.status WHERE a.id = :id
+                        """)
+        int updateStatusApp(@Param("id") Long id);
 
-    @Modifying
-    @Query("DELETE FROM AppApplications a WHERE a.id = :id")
-    int deleteApp(@Param("id") Long id);
+        @Modifying
+        @Query("DELETE FROM AppApplications a WHERE a.id = :id")
+        int deleteApp(@Param("id") Long id);
 
-    @Query("""
-            SELECT COUNT(a) > 0 FROM AppApplications a WHERE a.id = :id AND a.status = true
-            """)
-    boolean existsByIDAndStatus(@Param("id") Long id);
+        @Query("""
+                        SELECT COUNT(a) > 0 FROM AppApplications a WHERE a.id = :id AND a.status = true
+                        """)
+        boolean existsByIDAndStatus(@Param("id") Long id);
 
 }

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/api-apps")
+@RequestMapping("/api/keys")
 public class ApiController {
 
     private final ApiService apiService;

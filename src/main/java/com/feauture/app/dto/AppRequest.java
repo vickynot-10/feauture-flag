@@ -34,7 +34,6 @@ public class AppRequest {
         }
 
         public record StatusUpdateApp(
-                        @NotNull(message = "ID is Required") @Positive Long id,
-                        @NotNull(message = "Status is Required") Boolean status) {
+                        @NotNull(message = "ID is Required") @Positive Long id) {
         }
 }

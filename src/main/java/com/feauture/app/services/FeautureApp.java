@@ -10,7 +10,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.feauture.app.constants.AppConstants;
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AppRequest;
 import com.feauture.app.entity.AppApplications;
@@ -72,7 +71,7 @@ public class FeautureApp {
 
     @Transactional
     public ApiResponse<Void> updateStatusApp(AppRequest.StatusUpdateApp request) {
-        final int response = applicationRepository.updateStatusApp(request.id(), request.status());
+        final int response = applicationRepository.updateStatusApp(request.id());
         if (response == 0) {
             throw ApiResponse.error(HttpStatus.NOT_FOUND, "App not found !");
         }
