@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiRequest;
 import com.feauture.app.dto.ApiResponse;
-import com.feauture.app.dto.AppRequest;
+
 import com.feauture.app.services.ApiService;
 
 import jakarta.validation.Valid;

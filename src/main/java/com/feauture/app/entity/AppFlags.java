@@ -38,6 +38,9 @@ public class AppFlags {
     @Column(name = "flag_key", nullable = false, updatable = false, length = 50)
     private String flagKey;
 
+    @Column(nullable = false, length = 150)
+    private String key;
+
     @Column(nullable = false)
     private boolean enabled = true;
 

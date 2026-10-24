@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AppRequest;
+import com.feauture.app.entity.AppApplications;
 import com.feauture.app.services.FeautureApp;
 
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +32,11 @@ public class AppController {
     @GetMapping
     public ApiResponse<Map<String, Object>> getApps(@Valid AppRequest.PageQuery query) {
         return feautureApp.getApps(query);
+    }
+
+    @GetMapping("/get-apps")
+    public ApiResponse<List<AppApplications>> getAppsList() {
+        return feautureApp.getAppList();
     }
 
     @PostMapping

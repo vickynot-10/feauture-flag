@@ -1,5 +1,6 @@
 package com.feauture.app.services;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,11 @@ public class FeautureApp {
                 "list", result.getContent());
         return ApiResponse.success("Applications fetched Successfully !", data);
 
+    }
+
+    public ApiResponse<List<AppApplications>> getAppList() {
+        List<AppApplications> apps = applicationRepository.findAll();
+        return ApiResponse.success("List Fetched", apps);
     }
 
     private Specification<AppApplications> nameContains(String str) {

@@ -12,16 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.feauture.app.constants.AppConstants;
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.FlagRequest;
-import com.feauture.app.entity.AppApplications;
 import com.feauture.app.entity.AppFlagVersions;
 import com.feauture.app.entity.AppFlags;
 import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.repository.AppFlagVersionRepository;
 import com.feauture.app.repository.ApplicationRepository;
 import com.feauture.app.repository.UserRepository;
+import com.feauture.app.util.ApiKeyUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,11 +56,16 @@ public class FlagService {
         if (appFlagRepository.existsByApp_IdAndFlagKey(request.app(), request.flagKey())) {
             throw ApiResponse.error(HttpStatus.CONFLICT, "A Flag with similar Key and App Already Exists !");
         }
+
+        String rawKey = ApiKeyUtil.generateKey();
+
         AppFlags app = new AppFlags();
         app.setEnabled(true);
+        app.setKey(ApiKeyUtil.hashKey(rawKey));
         app.setFlagKey(request.flagKey());
         app.setApp(applicationRepository.getReferenceById(request.app()));
         appFlagRepository.save(app);
+
         insertVersion(app, 1, request.definition(), userId);
         return ApiResponse.success("Flag Created Successfully !", null);
     }
