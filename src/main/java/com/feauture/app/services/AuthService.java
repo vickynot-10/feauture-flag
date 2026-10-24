@@ -1,12 +1,9 @@
 package com.feauture.app.services;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AuthRequest;
@@ -51,7 +48,7 @@ public class AuthService {
         String email = request.email().trim().toLowerCase();
 
         AppUser userData = userRepository.findByEmail(email)
-                .orElseThrow(() -> ApiResponse.error(HttpStatus.UNAUTHORIZED, "Invalid Credentails !"));
+                .orElseThrow(() -> ApiResponse.error(HttpStatus.CONFLICT, "Invalid Credentails !"));
 
         String password = request.password();
 
