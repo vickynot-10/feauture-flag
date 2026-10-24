@@ -2,6 +2,10 @@ package com.feauture.app.constants;
 
 public class AppConstants {
 
+    // CORS
+
+    public static final String UI_ORIGIN = "http://localhost:3000";
+
     // Cookie Based constants
     public static final boolean IN_PRODUCTION = false;
     public static final String COOKIE_NAME = "feature_token";
