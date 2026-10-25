@@ -20,7 +20,6 @@ import com.feauture.app.services.FlagService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @RestController
@@ -48,8 +47,9 @@ public class FlagController {
     }
 
     @PatchMapping
-    public ApiResponse<Void> updateStatusFlag(@Valid @RequestBody FlagRequest.idFlagRequest request) {
-        return flagService.statusToggleFlag(request.id());
+    public ApiResponse<Void> updateStatusFlag(@Valid @RequestBody FlagRequest.idFlagRequest request,
+            @RequestAttribute("userId") Long userId) {
+        return flagService.statusToggleFlag(request.id(), userId);
     }
 
     @DeleteMapping("/{id}")

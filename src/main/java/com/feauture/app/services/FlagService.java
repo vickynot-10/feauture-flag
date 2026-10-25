@@ -60,6 +60,10 @@ public class FlagService {
         app.setEnabled(true);
         app.setFlagKey(request.flagKey());
         app.setApp(applicationRepository.getReferenceById(request.app()));
+
+        app.setCreatedBy(userRepository.getReferenceById(userId));
+        app.setUpdatedBy(userRepository.getReferenceById(userId));
+
         appFlagRepository.save(app);
 
         insertVersion(app, 1, request.definition(), userId);
@@ -71,7 +75,7 @@ public class FlagService {
 
         int nextversion = request.expectedVersion() + 1;
         int updated = appFlagRepository.insertVersion(request.id(), request.expectedVersion(), nextversion,
-                Instant.now());
+                Instant.now(), userRepository.getReferenceById(userId));
 
         if (updated == 0) {
             if (!appFlagRepository.existsById(request.id())) {
@@ -85,8 +89,8 @@ public class FlagService {
     }
 
     @Transactional
-    public ApiResponse<Void> statusToggleFlag(Long id) {
-        final int response = appFlagRepository.statusToggle(id);
+    public ApiResponse<Void> statusToggleFlag(Long id, Long userId) {
+        final int response = appFlagRepository.statusToggle(id, userRepository.getReferenceById(userId));
         if (response == 0) {
             throw ApiResponse.error(HttpStatus.CONFLICT, "Flag failed to update or May not found !");
         }
