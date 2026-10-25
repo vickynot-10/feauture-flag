@@ -36,6 +36,9 @@ public class AppApiKeys {
     @Column(nullable = false, length = 150)
     private String key;
 
+    @Column(name = "key_prefix", nullable = false, length = 20)
+    private String keyPrefix;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "fk_app_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

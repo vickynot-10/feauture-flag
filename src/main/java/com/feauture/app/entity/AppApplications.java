@@ -33,12 +33,6 @@ public class AppApplications {
     @Column(nullable = false)
     private boolean status;
 
-    @Column(nullable = false)
-    private String key;
-
-    @Column(name = "key_prefix", nullable = false, length = 20)
-    private String keyPrefix;
-
     @CreationTimestamp
     @Column(updatable = false)
     private Instant created_at;

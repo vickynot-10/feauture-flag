@@ -36,7 +36,7 @@ public class AppApiController {
     }
 
     @PostMapping
-    public ApiResponse<Map<String, String>> saveApi(@RequestBody @Valid ApiRequest.SaveApi request) {
+    public ApiResponse<String> saveApi(@RequestBody @Valid ApiRequest.SaveApi request) {
         return apiService.saveApi(request);
     }
 

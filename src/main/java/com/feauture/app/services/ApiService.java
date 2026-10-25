@@ -42,7 +42,7 @@ public class ApiService {
         return ApiResponse.success("Fetcted Successfully !", data);
     }
 
-    public ApiResponse<Map<String, String>> saveApi(ApiRequest.SaveApi request) {
+    public ApiResponse<String> saveApi(ApiRequest.SaveApi request) {
 
         boolean isExists = applicationRepository.existsByIDAndStatus(request.app_id());
 
@@ -55,11 +55,12 @@ public class ApiService {
         AppApiKeys app = new AppApiKeys();
         app.setName(request.name());
         app.setKey(ApiKeyUtil.hashKey(rawKey));
+        app.setKeyPrefix(rawKey.substring(0, 11));
         app.setUpdated_at(Instant.now());
         app.setApp(applicationRepository.getReferenceById(request.app_id()));
         app.setStatus(true);
         apiRepository.save(app);
-        return ApiResponse.success("API Key Saved Successfully !", Map.of("key", rawKey));
+        return ApiResponse.success("API Key Saved Successfully !", rawKey);
 
     }
 
