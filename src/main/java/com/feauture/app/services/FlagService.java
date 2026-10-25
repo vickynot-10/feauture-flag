@@ -20,7 +20,6 @@ import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.repository.AppFlagVersionRepository;
 import com.feauture.app.repository.ApplicationRepository;
 import com.feauture.app.repository.UserRepository;
-import com.feauture.app.util.ApiKeyUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,11 +56,8 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "A Flag with similar Key and App Already Exists !");
         }
 
-        String rawKey = ApiKeyUtil.generateKey();
-
         AppFlags app = new AppFlags();
         app.setEnabled(true);
-        app.setKey(ApiKeyUtil.hashKey(rawKey));
         app.setFlagKey(request.flagKey());
         app.setApp(applicationRepository.getReferenceById(request.app()));
         appFlagRepository.save(app);

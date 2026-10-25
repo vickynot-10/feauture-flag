@@ -15,6 +15,8 @@ import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.AppRequest;
 import com.feauture.app.entity.AppApplications;
 import com.feauture.app.repository.ApplicationRepository;
+import com.feauture.app.util.ApiKeyUtil;
+
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -24,13 +26,16 @@ public class FeautureApp {
 
     private final ApplicationRepository applicationRepository;
 
-    public ApiResponse<Void> saveApp(AppRequest.SaveApp request) {
+    public ApiResponse<String> saveApp(AppRequest.SaveApp request) {
         AppApplications app = new AppApplications();
         app.setName(request.name());
         app.setEnvironment(request.environment());
         app.setStatus(true);
+        String rawKey = ApiKeyUtil.generateKey();
+        app.setKeyPrefix(rawKey.substring(0, 11));
+        app.setKey(ApiKeyUtil.hashKey(rawKey));
         applicationRepository.save(app);
-        return ApiResponse.success("Application Created Successfully !", null);
+        return ApiResponse.success("Application Created Successfully !", rawKey);
     }
 
     @Transactional(readOnly = true)

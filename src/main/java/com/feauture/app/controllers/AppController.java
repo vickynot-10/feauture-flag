@@ -40,7 +40,7 @@ public class AppController {
     }
 
     @PostMapping
-    public ApiResponse<Void> saveApp(@Valid @RequestBody AppRequest.SaveApp request) {
+    public ApiResponse<String> saveApp(@Valid @RequestBody AppRequest.SaveApp request) {
 
         return feautureApp.saveApp(request);
     }
