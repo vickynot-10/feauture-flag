@@ -1,7 +1,9 @@
 package com.feauture.app.services;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -52,13 +54,19 @@ public class FlagService {
 
     @Transactional
     public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
-        if (appFlagRepository.existsByApp_IdAndFlagKey(request.app(), request.flagKey())) {
+
+        String flagKey = toFlagKey(request.flagKey());
+        if (flagKey.isEmpty()) {
+            throw ApiResponse.error(HttpStatus.BAD_REQUEST, "Invalid flag key");
+        }
+        if (appFlagRepository.existsByApp_IdAndFlagKey(request.app(), flagKey)) {
             throw ApiResponse.error(HttpStatus.CONFLICT, "A Flag with similar Key and App Already Exists !");
         }
 
         AppFlags app = new AppFlags();
         app.setEnabled(true);
-        app.setFlagKey(request.flagKey());
+        app.setName(request.name());
+        app.setFlagKey(flagKey);
         app.setApp(applicationRepository.getReferenceById(request.app()));
 
         app.setCreatedBy(userRepository.getReferenceById(userId));
@@ -66,7 +74,7 @@ public class FlagService {
 
         appFlagRepository.save(app);
 
-        insertVersion(app, 1, request.definition(), userId);
+        insertVersion(app, 1, userId);
         return ApiResponse.success("Flag Created Successfully !", null);
     }
 
@@ -107,15 +115,37 @@ public class FlagService {
         return ApiResponse.success("Flag Deleted Successfully !", null);
     }
 
-    private void insertVersion(AppFlags flag, int version, Map<String, Object> definition, Long userId) {
+    private void insertVersion(AppFlags flag, int version, Long userId) {
 
         AppFlagVersions appVersion = new AppFlagVersions();
         appVersion.setVersion(version);
         appVersion.setFlag(flag);
-        appVersion.setDefinition(definition);
+
         appVersion.setCreatedBy(userRepository.getReferenceById(userId));
         appFlagVersionRepository.save(appVersion);
 
+    }
+
+    public static String toFlagKey(String value) {
+        final Pattern VALID = Pattern.compile("^[a-z0-9_-]+$");
+        final Pattern INVALID_RUN = Pattern.compile("[^a-z0-9]+");
+        final Pattern EDGE_UNDERSCORES = Pattern.compile("^_+|_+$");
+
+        if (value == null) {
+            return "";
+        }
+        String lowered = value.trim().toLowerCase(Locale.ROOT);
+        if (VALID.matcher(lowered).matches()) {
+            return cut(lowered);
+        }
+        String cleaned = INVALID_RUN.matcher(lowered).replaceAll("_");
+        cleaned = EDGE_UNDERSCORES.matcher(cleaned).replaceAll("");
+        return cut(cleaned);
+    }
+
+    private static String cut(String value) {
+        final int MAX_LENGTH = 50;
+        return value.length() > MAX_LENGTH ? value.substring(0, MAX_LENGTH) : value;
     }
 
 }

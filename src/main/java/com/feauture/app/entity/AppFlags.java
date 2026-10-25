@@ -30,6 +30,9 @@ public class AppFlags {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 30)
+    private String name;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "fk_app_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
