@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +16,9 @@ import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.entity.AppApiKeys;
 import com.feauture.app.repository.ApiRepository;
 import com.feauture.app.repository.ApplicationRepository;
+import com.feauture.app.repository.UserRepository;
 import com.feauture.app.util.ApiKeyUtil;
-
+import com.feauture.app.repository.ApiRepository.ApiKeyItem;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -26,23 +27,21 @@ public class ApiService {
 
     private final ApplicationRepository applicationRepository;
     private final ApiRepository apiRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public ApiResponse<Map<String, Object>> getApis(ApiRequest.PageQuery query) {
-        Pageable page = PageRequest.of(query.page() - 1, query.limit(), Sort.by("updated_at").descending());
-        Specification<AppApiKeys> specs = null;
-        if (query.search() != null) {
-            specs = (root, cq, cb) -> cb.like(cb.lower(root.get("name")), "%" + query.search().toLowerCase() + "%");
-        }
+        Pageable page = PageRequest.of(query.page() - 1, query.limit(), Sort.by("updatedAt").descending());
+        String search = query.search() == null ? "" : query.search();
 
-        Page<AppApiKeys> result = apiRepository.findAll(specs, page);
+        Page<ApiKeyItem> result = apiRepository.findByNameContainingIgnoreCase(search, page);
         Map<String, Object> data = Map.of(
                 "list", result.getContent(),
                 "total", result.getTotalElements());
         return ApiResponse.success("Fetcted Successfully !", data);
     }
 
-    public ApiResponse<String> saveApi(ApiRequest.SaveApi request) {
+    public ApiResponse<String> saveApi(ApiRequest.SaveApi request, Long userID) {
 
         boolean isExists = applicationRepository.existsByIDAndStatus(request.app_id());
 
@@ -56,7 +55,9 @@ public class ApiService {
         app.setName(request.name());
         app.setKey(ApiKeyUtil.hashKey(rawKey));
         app.setKeyPrefix(rawKey.substring(0, 11));
-        app.setUpdated_at(Instant.now());
+        app.setUpdatedAt(Instant.now());
+        app.setCreatedBy(userRepository.getReferenceById(userID));
+        app.setUpdatedBy(userRepository.getReferenceById(userID));
         app.setApp(applicationRepository.getReferenceById(request.app_id()));
         app.setStatus(true);
         apiRepository.save(app);
@@ -65,14 +66,15 @@ public class ApiService {
     }
 
     @Transactional
-    public ApiResponse<Void> updateApi(ApiRequest.EditApi request) {
+    public ApiResponse<Void> updateApi(ApiRequest.EditApi request, Long userID) {
 
         boolean isExists = applicationRepository.existsByIDAndStatus(request.app_id());
 
         if (!isExists) {
             throw ApiResponse.error(HttpStatus.NOT_FOUND, "Invalid App ID");
         }
-        int response = apiRepository.updateApp(request.id(), request.name(),
+
+        int response = apiRepository.updateApp(request.id(), request.name(), userRepository.getReferenceById(userID),
                 applicationRepository.getReferenceById(request.app_id()), Instant.now());
 
         if (response <= 0) {
@@ -84,8 +86,9 @@ public class ApiService {
     }
 
     @Transactional
-    public ApiResponse<Void> updateStatusApi(ApiRequest.StatusUpdate request) {
-        int response = apiRepository.updateStatusApi(request.id(), Instant.now());
+    public ApiResponse<Void> updateStatusApi(ApiRequest.StatusUpdate request, Long userID) {
+        int response = apiRepository.updateStatusApi(request.id(), userRepository.getReferenceById(userID),
+                Instant.now());
 
         if (response <= 0) {
             throw ApiResponse.error(HttpStatus.NOT_FOUND, "No API key is found !");

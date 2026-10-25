@@ -44,13 +44,22 @@ public class AppApiKeys {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private AppApplications app;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by", nullable = false)
+    private AppUser createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "updated_by", nullable = false)
+    private AppUser updatedBy;
+
     @Column(nullable = false)
     private boolean status = true;
-    @CreationTimestamp
-    @Column(updatable = false)
-    private Instant created_at;
 
-    @Column()
-    private Instant updated_at;
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
 }

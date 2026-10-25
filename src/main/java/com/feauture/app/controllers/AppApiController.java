@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RequiredArgsConstructor
@@ -36,18 +37,21 @@ public class AppApiController {
     }
 
     @PostMapping
-    public ApiResponse<String> saveApi(@RequestBody @Valid ApiRequest.SaveApi request) {
-        return apiService.saveApi(request);
+    public ApiResponse<String> saveApi(@RequestBody @Valid ApiRequest.SaveApi request,
+            @RequestAttribute("userId") Long userId) {
+        return apiService.saveApi(request, userId);
     }
 
     @PutMapping
-    public ApiResponse<Void> editApi(@RequestBody @Valid ApiRequest.EditApi request) {
-        return apiService.updateApi(request);
+    public ApiResponse<Void> editApi(@RequestBody @Valid ApiRequest.EditApi request,
+            @RequestAttribute("userId") Long userId) {
+        return apiService.updateApi(request, userId);
     }
 
     @PatchMapping
-    public ApiResponse<Void> statusUpdateApi(@RequestBody @Valid ApiRequest.StatusUpdate request) {
-        return apiService.updateStatusApi(request);
+    public ApiResponse<Void> statusUpdateApi(@RequestBody @Valid ApiRequest.StatusUpdate request,
+            @RequestAttribute("userId") Long userId) {
+        return apiService.updateStatusApi(request, userId);
     }
 
     @DeleteMapping("/{id}")
