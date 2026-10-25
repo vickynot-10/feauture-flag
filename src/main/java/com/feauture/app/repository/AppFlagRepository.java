@@ -42,7 +42,7 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
 
                         String getName();
 
-                        boolean getStatus();
+                        int getEnvironment();
 
                 }
 
