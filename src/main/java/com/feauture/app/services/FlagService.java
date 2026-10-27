@@ -50,6 +50,17 @@ public class FlagService {
 
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<AppFlags> getFlagByID(
+            FlagRequest.getFlagByID query) {
+
+        AppFlags res = appFlagRepository.findById(query.id())
+                .orElseThrow(() -> ApiResponse.error(
+                        HttpStatus.NOT_FOUND, "Flag not found"));
+
+        return ApiResponse.success("Fetched Successfully!", res);
+    }
+
     @Transactional
     public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
 
@@ -83,7 +94,7 @@ public class FlagService {
     }
 
     @Transactional
-    public ApiResponse<Void> editFlag(FlagRequest.editFlag request, Long userId) {
+    public ApiResponse<Void> editFlag(FlagRequest.saveflagEditor request, Long userId) {
 
         int nextversion = request.expectedVersion() + 1;
         int updated = appFlagRepository.insertVersion(request.id(), request.expectedVersion(), nextversion,
@@ -96,12 +107,7 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "Flag was changed by someone else, reload and retry !");
         }
 
-        Map<String, Object> definition = Map.of(
-                "test", true,
-                "message", "Hello World",
-                "limit", 100,
-                "enabled", true);
-        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, definition, userId);
+        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.defintion(), userId);
 
         return ApiResponse.success("Flag updated Successfully !", null);
     }

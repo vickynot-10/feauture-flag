@@ -1,5 +1,7 @@
 package com.feauture.app.dto;
 
+import java.util.Map;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -21,16 +23,25 @@ public class FlagRequest {
                 }
         }
 
+        public record getFlagByID(
+                        @NotNull(message = "ID is required") Long id) {
+
+        }
+
         public record saveFlag(
                         @NotNull(message = "App is Required") Long app,
                         @NotBlank(message = "Name is Required") @Size(max = 30, message = "Name must be max 30 characters") String name,
                         @NotBlank(message = "Key is Required") @Size(max = 50, message = "Maximum of 50 characters") @Pattern(regexp = "^[a-z0-9_-]+$", message = "Only lowercase letters, digits, underscore and dash") String flagKey) {
         }
 
-        public record editFlag(
-                        @NotNull(message = "Edit ID is Required") Long id,
-                        @NotBlank(message = "Name is Required") @Size(max = 30, message = "Name must be max 30 characters") String name,
-                        @NotNull(message = "Expected version is Required") @Min(1) Integer expectedVersion) {
+        public record saveflagEditor(
+                        @NotNull(message = "ID is required") Long id,
+
+                        @NotNull(message = "Expected version is Required") @Min(1) Integer expectedVersion,
+
+                        @NotNull(message = "Definitions is Required") Map<String, Object> defintion
+
+        ) {
         }
 
         public record idFlagRequest(

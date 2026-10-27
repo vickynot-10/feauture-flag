@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.FlagRequest;
+import com.feauture.app.entity.AppFlags;
 import com.feauture.app.services.FlagService;
 
 import jakarta.validation.Valid;
@@ -40,10 +40,16 @@ public class FlagController {
         return flagService.saveFlag(request, userId);
     }
 
-    @PutMapping
-    public ApiResponse<Void> updateFlags(@Valid @RequestBody FlagRequest.editFlag request,
+    @PostMapping("/editor")
+    public ApiResponse<Void> saveflagEditor(@Valid @RequestBody FlagRequest.saveflagEditor request,
             @RequestAttribute("userId") Long userId) {
+
         return flagService.editFlag(request, userId);
+    }
+
+    @GetMapping("/get-flag")
+    public ApiResponse<AppFlags> getFlagValue(@Valid FlagRequest.getFlagByID request) {
+        return flagService.getFlagByID(request);
     }
 
     @PatchMapping
