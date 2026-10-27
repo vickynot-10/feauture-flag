@@ -1,6 +1,7 @@
 package com.feauture.app.repository;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,6 +56,48 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
 
         @EntityGraph(attributePaths = { "app", "createdAt", "updatedAt" })
         Page<FlagItem> findByNameContainingIgnoreCase(String search, Pageable pageable);
+
+        interface FlagDetails {
+                Long getId();
+
+                String getName();
+
+                String getFlagKey();
+
+                int getCurrentVersion();
+
+                Instant getCreatedAt();
+
+                Instant getUpdatedAt();
+
+                String getCreatedBy();
+
+                String getLastUpdatedBy();
+
+                String getAppName();
+
+                int getAppEnvironment();
+        }
+
+        @Query("""
+                                SELECT f.id as id ,
+                                f.name as name,
+                                f.flagKey as flagKey,
+                                f.currentVersion as currentVersion,
+                                f.createdAt as createdAt ,
+                                f.updatedAt as updatedAt,
+                                creator.name as createdBy,
+                                updated.name as lastUpdatedBy,
+                                app.name as appName ,
+                                app.environment as appEnvironment
+                                FROM AppFlags f
+                                LEFT JOIN f.createdBy as creator
+                                LEFT JOIN f.updatedBy as updated
+                                LEFT JOIN f.app as app
+                                WHERE f.id =:id
+
+                        """)
+        Optional<FlagDetails> findFlagById(@Param("id") Long id);
 
         boolean existsByApp_IdAndFlagKey(Long appId, String flagKey);
 

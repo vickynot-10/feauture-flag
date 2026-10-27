@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.FlagRequest;
-import com.feauture.app.entity.AppFlags;
+import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.services.FlagService;
 
 import jakarta.validation.Valid;
@@ -48,7 +48,7 @@ public class FlagController {
     }
 
     @GetMapping("/get-flag")
-    public ApiResponse<AppFlags> getFlagValue(@Valid FlagRequest.getFlagByID request) {
+    public ApiResponse<AppFlagRepository.FlagDetails> getFlagValue(@Valid FlagRequest.getFlagByID request) {
         return flagService.getFlagByID(request);
     }
 

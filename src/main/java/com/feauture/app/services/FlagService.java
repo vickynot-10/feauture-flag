@@ -51,10 +51,10 @@ public class FlagService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<AppFlags> getFlagByID(
+    public ApiResponse<AppFlagRepository.FlagDetails> getFlagByID(
             FlagRequest.getFlagByID query) {
 
-        AppFlags res = appFlagRepository.findById(query.id())
+        var res = appFlagRepository.findFlagById(query.id())
                 .orElseThrow(() -> ApiResponse.error(
                         HttpStatus.NOT_FOUND, "Flag not found"));
 
