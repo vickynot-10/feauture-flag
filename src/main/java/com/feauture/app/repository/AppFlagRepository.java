@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.entity.AppFlags;
 import com.feauture.app.entity.AppUser;
 
@@ -77,6 +78,8 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
                 String getAppName();
 
                 int getAppEnvironment();
+
+                FlagDefinitionRequest.Definition getDefinition();
         }
 
         @Query("""
@@ -89,11 +92,13 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
                                 creator.name as createdBy,
                                 updated.name as lastUpdatedBy,
                                 app.name as appName ,
-                                app.environment as appEnvironment
+                                app.environment as appEnvironment,
+                                v.definition as definition
                                 FROM AppFlags f
                                 LEFT JOIN f.createdBy as creator
                                 LEFT JOIN f.updatedBy as updated
                                 LEFT JOIN f.app as app
+                                LEFT JOIN AppFlagVersions v ON v.flag = f AND v.version = f.currentVersion
                                 WHERE f.id =:id
 
                         """)
