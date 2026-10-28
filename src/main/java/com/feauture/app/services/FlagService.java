@@ -1,8 +1,10 @@
 package com.feauture.app.services;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.feauture.app.dto.ApiResponse;
+import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.dto.FlagRequest;
 import com.feauture.app.entity.AppFlagVersions;
 import com.feauture.app.entity.AppFlags;
@@ -63,7 +66,6 @@ public class FlagService {
 
     @Transactional
     public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
-
         String flagKey = toFlagKey(request.flagKey());
         if (flagKey.isEmpty()) {
             throw ApiResponse.error(HttpStatus.BAD_REQUEST, "Invalid flag key");
@@ -72,25 +74,23 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "A Flag with similar Key and App Already Exists !");
         }
 
-        AppFlags app = new AppFlags();
-        app.setEnabled(true);
-        app.setName(request.name());
-        app.setFlagKey(flagKey);
-        app.setApp(applicationRepository.getReferenceById(request.app()));
+        AppFlags flag = new AppFlags();
+        flag.setEnabled(true);
+        flag.setName(request.name());
+        flag.setFlagKey(flagKey);
+        flag.setCurrentVersion(1);
+        flag.setApp(applicationRepository.getReferenceById(request.app()));
+        flag.setCreatedBy(userRepository.getReferenceById(userId));
+        flag.setUpdatedBy(userRepository.getReferenceById(userId));
+        appFlagRepository.save(flag);
 
-        app.setCreatedBy(userRepository.getReferenceById(userId));
-        app.setUpdatedBy(userRepository.getReferenceById(userId));
-
-        appFlagRepository.save(app);
-
-        Map<String, Object> definition = Map.of(
-                "test", true,
-                "message", "Hello World",
-                "limit", 100,
-                "enabled", true);
-
-        insertVersion(app, 1, definition, userId);
+        insertVersion(flag, 1, defaultDefinition(), userId);
         return ApiResponse.success("Flag Created Successfully !", null);
+    }
+
+    private FlagDefinitionRequest.Definition defaultDefinition() {
+        return new FlagDefinitionRequest.Definition(
+                UUID.randomUUID().toString().substring(0, 8), "user_id", false, List.of());
     }
 
     @Transactional
@@ -107,7 +107,7 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "Flag was changed by someone else, reload and retry !");
         }
 
-        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.defintion(), userId);
+        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.definition(), userId);
 
         return ApiResponse.success("Flag updated Successfully !", null);
     }
@@ -131,7 +131,7 @@ public class FlagService {
         return ApiResponse.success("Flag Deleted Successfully !", null);
     }
 
-    private void insertVersion(AppFlags flag, int version, Map<String, Object> definition, Long userId) {
+    private void insertVersion(AppFlags flag, int version, FlagDefinitionRequest.Definition definition, Long userId) {
 
         AppFlagVersions appVersion = new AppFlagVersions();
         appVersion.setVersion(version);
