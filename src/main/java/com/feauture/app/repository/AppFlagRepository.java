@@ -1,6 +1,7 @@
 package com.feauture.app.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -105,6 +106,43 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
         Optional<FlagDetails> findFlagById(@Param("id") Long id);
 
         boolean existsByApp_IdAndFlagKey(Long appId, String flagKey);
+
+        public interface ListFlagDetails {
+                Long getId();
+
+                String getName();
+
+                String getFlagKey();
+
+                String getAppName();
+
+                Integer getAppEnvironment();
+
+                Integer[] getVersions();
+        }
+
+        @Query(value = """
+                        SELECT
+                            f.id AS id,
+                            f.name AS name,
+                            f.flag_key AS "flagKey",
+                            app.name AS "appName",
+                            app.environment AS "appEnvironment",
+                            ARRAY_AGG(v.version ORDER BY v.version DESC)
+                                FILTER (WHERE v.version IS NOT NULL) AS versions
+                        FROM flags f
+                        LEFT JOIN apps app ON app.id = f.fk_app_id
+                        LEFT JOIN flag_versions v ON v.fk_flag_id = f.id
+                        GROUP BY
+                            f.id,
+                            f.name,
+                            f.flag_key,
+                            app.name,
+                            app.environment,
+                            f.updated_at
+                        ORDER BY f.updated_at DESC
+                        """, nativeQuery = true)
+        List<ListFlagDetails> findAllFlagVersions();
 
         @Modifying(clearAutomatically = true)
         @Query("""

@@ -64,6 +64,11 @@ public class FlagService {
         return ApiResponse.success("Fetched Successfully!", res);
     }
 
+    @Transactional(readOnly = true)
+    public List<AppFlagRepository.ListFlagDetails> getFlagLists() {
+        return appFlagRepository.findAllFlagVersions();
+    }
+
     @Transactional
     public ApiResponse<Void> saveFlag(FlagRequest.saveFlag request, Long userId) {
         String flagKey = toFlagKey(request.flagKey());

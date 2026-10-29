@@ -1,7 +1,9 @@
 package com.feauture.app.controllers;
 
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -45,6 +47,17 @@ public class FlagController {
             @RequestAttribute("userId") Long userId) {
 
         return flagService.editFlag(request, userId);
+    }
+
+    @GetMapping("/get-flag-list")
+    public List<AppFlagRepository.ListFlagDetails> getFlags() {
+        return flagService.getFlagLists();
+    }
+
+    @PostMapping("/playground")
+    public String editorPlayGround(@RequestBody String entity) {
+
+        return entity;
     }
 
     @GetMapping("/get-flag")
