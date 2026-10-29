@@ -122,25 +122,25 @@ public interface AppFlagRepository extends JpaRepository<AppFlags, Long>, JpaSpe
         }
 
         @Query(value = """
-                        SELECT
-                            f.id AS id,
-                            f.name AS name,
-                            f.flag_key AS "flagKey",
-                            app.name AS "appName",
-                            app.environment AS "appEnvironment",
-                            ARRAY_AGG(v.version ORDER BY v.version DESC)
-                                FILTER (WHERE v.version IS NOT NULL) AS versions
-                        FROM flags f
+                        SELECT f.id AS "id" ,
+                        f.flag_key AS "flagKey",
+                        f.name AS "name" ,
+                        app.environment AS "appEnvironment" ,
+                        app.name AS "appName",
+                        ARRAY_AGG(v.version  ORDER BY v.version DESC)
+                        FILTER(WHERE v.version IS NOT NULL) AS "versions"
+                        from flags f
                         LEFT JOIN apps app ON app.id = f.fk_app_id
                         LEFT JOIN flag_versions v ON v.fk_flag_id = f.id
-                        GROUP BY
-                            f.id,
+                        WHERE f.id IS NOT NULL
+                        GROUP BY   f.id,
                             f.name,
                             f.flag_key,
                             app.name,
                             app.environment,
                             f.updated_at
                         ORDER BY f.updated_at DESC
+
                         """, nativeQuery = true)
         List<ListFlagDetails> findAllFlagVersions();
 
