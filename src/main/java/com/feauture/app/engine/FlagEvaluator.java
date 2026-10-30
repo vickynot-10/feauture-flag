@@ -11,15 +11,9 @@ import com.feauture.app.engine.Models.Rule;
 import com.feauture.app.engine.Models.Slice;
 import com.google.common.hash.Hashing;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-
 public class FlagEvaluator {
 
-    public boolean FlagEvaluatorMethod(String flagKey, String salt, String bucketBy, Boolean defaultnOn,
+    public boolean Evaluate(String flagKey, String salt, String bucketBy, Boolean defaultnOn,
             List<Rule> rules,
             Map<String, String> attributes) {
         if (attributes == null || attributes.isEmpty()) {
@@ -33,12 +27,12 @@ public class FlagEvaluator {
                 continue;
             }
 
-            for (int j = 0; j < current_rule.conditions().size() - 1; j++) {
+            for (int j = 0; j < current_rule.conditions().size(); j++) {
                 Condition condition = current_rule.conditions().get(j);
                 boolean matchCondition = ConditionMatch(condition, attributes);
                 // break and go to next condition
                 if (!matchCondition) {
-                    i++;
+
                     continue first;
                 }
             }

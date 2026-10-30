@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.dto.FlagRequest;
+import com.feauture.app.engine.FlagEvaluator;
 import com.feauture.app.entity.AppFlagVersions;
 import com.feauture.app.entity.AppFlags;
 import com.feauture.app.repository.AppFlagRepository;
@@ -37,6 +38,8 @@ public class FlagService {
 
     private final ApplicationRepository applicationRepository;
     private final AppFlagVersionRepository appFlagVersionRepository;
+
+    private final FlagEvaluator flagEvaluator;
 
     @Transactional(readOnly = true)
     public ApiResponse<Map<String, Object>> getFlags(FlagRequest.PageQuery query) {
@@ -83,6 +86,12 @@ public class FlagService {
     public ApiResponse<AppFlagVersions> playgroundEditor(FlagRequest.playgroundBody request) {
         AppFlagVersions flag = appFlagVersionRepository.findByFlag_IdAndVersion(request.flagId(), request.version())
                 .orElseThrow(() -> new RuntimeException("Flag version not found"));
+
+        var definition = flag.getDefinition();
+
+        // boolean response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(),
+        // definition.salt(), definition.bucketBy(),
+        // definition.defaultOn(), definition.rules(), request.context());
 
         return ApiResponse.success("Fetcehd Successfully !", flag);
     }
