@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import com.feauture.app.constants.AppConstants;
 
 import com.feauture.app.dto.FlagDefinitionRequest.Condition;
@@ -12,6 +14,7 @@ import com.feauture.app.dto.FlagDefinitionRequest.Slice;
 
 import com.google.common.hash.Hashing;
 
+@Component
 public class FlagEvaluator {
 
     public boolean Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,

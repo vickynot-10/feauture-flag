@@ -61,7 +61,7 @@ public class FlagController {
     }
 
     @PostMapping("/playground")
-    public ApiResponse<AppFlagVersions> editorPlayGround(@Valid @RequestBody FlagRequest.playgroundBody request) {
+    public ApiResponse<Boolean> editorPlayGround(@Valid @RequestBody FlagRequest.playgroundBody request) {
         return flagService.playgroundEditor(request);
     }
 

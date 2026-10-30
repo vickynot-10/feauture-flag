@@ -83,7 +83,7 @@ public class FlagService {
     }
 
     @Transactional
-    public ApiResponse<AppFlagVersions> playgroundEditor(FlagRequest.playgroundBody request) {
+    public ApiResponse<Boolean> playgroundEditor(FlagRequest.playgroundBody request) {
         AppFlagVersions flag = appFlagVersionRepository.findByFlag_IdAndVersion(request.flagId(), request.version())
                 .orElseThrow(() -> new RuntimeException("Flag version not found"));
 
@@ -92,7 +92,7 @@ public class FlagService {
         boolean response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(), definition.salt(), request.bucketValue(),
                 definition.defaultOn(), definition.rules(), request.attributes());
 
-        return ApiResponse.success("Fetcehd Successfully !", flag);
+        return ApiResponse.success("Fetcehd Successfully !", response);
     }
 
     @Transactional
