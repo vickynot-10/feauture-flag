@@ -3,7 +3,6 @@ package com.feauture.app.controllers;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiResponse;
+import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.dto.FlagRequest;
 import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.services.FlagService;
@@ -54,10 +54,14 @@ public class FlagController {
         return flagService.getFlagLists();
     }
 
-    @PostMapping("/playground")
-    public String editorPlayGround(@RequestBody String entity) {
+    @GetMapping("/get-definition")
+    public ApiResponse<FlagDefinitionRequest.Definition> getMethodName(@Valid FlagRequest.GetDefinition request) {
+        return flagService.getFlagDefintion(request);
+    }
 
-        return entity;
+    @PostMapping("/playground")
+    public String editorPlayGround(@Valid @RequestBody FlagRequest.playgroundBody request) {
+        return flagService.playgroundEditor(request);
     }
 
     @GetMapping("/get-flag")

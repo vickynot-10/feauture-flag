@@ -54,6 +54,15 @@ public class FlagService {
     }
 
     @Transactional(readOnly = true)
+    public ApiResponse<FlagDefinitionRequest.Definition> getFlagDefintion(FlagRequest.GetDefinition request) {
+        AppFlagVersions flagVersion = appFlagVersionRepository
+                .findByFlag_IdAndVersion(request.id(), request.version())
+                .orElseThrow(() -> new RuntimeException("Flag version not found"));
+
+        return ApiResponse.success("Fetched Successfully !", flagVersion.getDefinition());
+    }
+
+    @Transactional(readOnly = true)
     public ApiResponse<AppFlagRepository.FlagDetails> getFlagByID(
             FlagRequest.getFlagByID query) {
 
@@ -66,7 +75,14 @@ public class FlagService {
 
     @Transactional(readOnly = true)
     public List<AppFlagRepository.ListFlagDetails> getFlagLists() {
+
         return appFlagRepository.findAllFlagVersions();
+    }
+
+    @Transactional
+    public String playgroundEditor(FlagRequest.playgroundBody request) {
+        System.out.println(request.context());
+        return "ok";
     }
 
     @Transactional

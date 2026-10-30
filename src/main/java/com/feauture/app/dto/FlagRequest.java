@@ -1,5 +1,7 @@
 package com.feauture.app.dto;
 
+import java.util.Map;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -22,6 +24,13 @@ public class FlagRequest {
                 }
         }
 
+        public record GetDefinition(
+                        @NotNull(message = "ID is required") Long id,
+                        @NotNull(message = "Version is required") Integer version
+
+        ) {
+        }
+
         public record getFlagByID(
                         @NotNull(message = "ID is required") Long id) {
 
@@ -37,6 +46,12 @@ public class FlagRequest {
                         @NotNull(message = "ID is required") Long id,
                         @NotNull(message = "Expected version is Required") @Min(1) Integer expectedVersion,
                         @NotNull(message = "Definition is Required") @Valid FlagDefinitionRequest.Definition definition) {
+        }
+
+        public record playgroundBody(
+                        @NotNull(message = "ID is required") Long flagId,
+                        @NotNull(message = "version is Required") @Min(1) Integer version,
+                        @NotNull(message = "Definition is Required") @Valid Map<String, Object> context) {
         }
 
         public record idFlagRequest(
