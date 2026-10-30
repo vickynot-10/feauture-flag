@@ -89,9 +89,8 @@ public class FlagService {
 
         var definition = flag.getDefinition();
 
-        // boolean response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(),
-        // definition.salt(), definition.bucketBy(),
-        // definition.defaultOn(), definition.rules(), request.context());
+        boolean response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(), definition.salt(), request.bucketValue(),
+                definition.defaultOn(), definition.rules(), request.attributes());
 
         return ApiResponse.success("Fetcehd Successfully !", flag);
     }

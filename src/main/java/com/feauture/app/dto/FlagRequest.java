@@ -49,9 +49,10 @@ public class FlagRequest {
         }
 
         public record playgroundBody(
-                        @NotNull(message = "ID is required") Long flagId,
-                        @NotNull(message = "version is Required") @Min(1) Integer version,
-                        @NotNull(message = "Definition is Required") @Valid Map<String, Object> context) {
+                        @NotNull Long flagId,
+                        @NotNull @Min(1) Integer version,
+                        @NotBlank(message = "Bucket value is required") String bucketValue,
+                        @NotNull Map<String, String> attributes) {
         }
 
         public record idFlagRequest(

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.feauture.app.dto.ApiResponse;
 import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.dto.FlagRequest;
+import com.feauture.app.entity.AppFlagVersions;
 import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.services.FlagService;
 
@@ -60,7 +61,7 @@ public class FlagController {
     }
 
     @PostMapping("/playground")
-    public ApiResponse<Boolean> editorPlayGround(@Valid @RequestBody FlagRequest.playgroundBody request) {
+    public ApiResponse<AppFlagVersions> editorPlayGround(@Valid @RequestBody FlagRequest.playgroundBody request) {
         return flagService.playgroundEditor(request);
     }
 

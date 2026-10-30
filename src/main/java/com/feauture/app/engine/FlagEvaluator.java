@@ -5,15 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.feauture.app.constants.AppConstants;
-import com.feauture.app.engine.Models.Condition;
 
-import com.feauture.app.engine.Models.Rule;
-import com.feauture.app.engine.Models.Slice;
+import com.feauture.app.dto.FlagDefinitionRequest.Condition;
+import com.feauture.app.dto.FlagDefinitionRequest.Rule;
+import com.feauture.app.dto.FlagDefinitionRequest.Slice;
+
 import com.google.common.hash.Hashing;
 
 public class FlagEvaluator {
 
-    public boolean Evaluate(String flagKey, String salt, String bucketBy, Boolean defaultnOn,
+    public boolean Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,
             List<Rule> rules,
             Map<String, String> attributes) {
         if (attributes == null || attributes.isEmpty()) {
@@ -47,13 +48,7 @@ public class FlagEvaluator {
                     return false;
                 }
 
-                String userId = attributes.get(bucketBy);
-
-                if (userId == null || userId.isBlank()) {
-                    return false;
-                }
-
-                int hashID = HashBucketID(flagKey, userId, salt);
+                int hashID = HashBucketID(flagKey, bucketValue, salt);
 
                 return RollOutUsers(rollouts, hashID);
             }
