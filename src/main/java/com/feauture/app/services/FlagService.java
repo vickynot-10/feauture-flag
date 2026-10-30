@@ -80,9 +80,11 @@ public class FlagService {
     }
 
     @Transactional
-    public String playgroundEditor(FlagRequest.playgroundBody request) {
-        System.out.println(request.context());
-        return "ok";
+    public ApiResponse<AppFlagVersions> playgroundEditor(FlagRequest.playgroundBody request) {
+        AppFlagVersions flag = appFlagVersionRepository.findByFlag_IdAndVersion(request.flagId(), request.version())
+                .orElseThrow(() -> new RuntimeException("Flag version not found"));
+
+        return ApiResponse.success("Fetcehd Successfully !", flag);
     }
 
     @Transactional

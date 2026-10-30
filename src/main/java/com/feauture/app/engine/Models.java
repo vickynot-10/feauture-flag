@@ -8,33 +8,27 @@ public class Models {
         EQUALS, NOT_EQUALS, IN, NOT_IN, CONTAINS, STARTS_WITH, GT, LT
     }
 
-    public record Slice(String variant, int weight) {
+    // new Condition("country", Operator.IN, List.of("IN", "LK"))
+    public record Condition(String attribute, Operator operator, List<String> values) {
     }
 
-    public record Serve(String variant, List<Slice> rollout) {
+    public record Slice(boolean variant, int weight) {
+    }
+
+    public record Serve(Boolean variant, List<Slice> rollout) {
     }
 
     public record Rule(String id, List<Condition> conditions, Serve serve) {
     }
 
-    public record FlagDefinition(
-            boolean enabled,
-            String salt,
-            String bucketBy,
-            List<Rule> rules,
-            String defaultVariant,
-            String offVariant) {
+    public record FlagDefinition(String salt, String bucketBy, boolean defaultOn, List<Rule> rules) {
     }
 
-    public record EvaluationResult(String variant, String reason, String ruleId) {
-    }
-
-    // new Condition("country", Operator.IN, List.of("IN", "LK"))
-    public record Condition(String attribute, Operator operator, List<String> values) {
+    public record EvaluationResult(boolean on, String reason, String ruleId, Integer bucket) {
     }
 
     // new UserContext("u1", Map.of("country", "in"));
-    public record UserContext(String userId, Map<String, String> attributes) {
+    public record UserContext(String id, Map<String, String> attributes) {
 
         public String get(String name) {
             if (attributes == null) {

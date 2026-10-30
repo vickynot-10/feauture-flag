@@ -8,4 +8,5 @@ import com.feauture.app.entity.AppFlagVersions;
 
 public interface AppFlagVersionRepository extends JpaRepository<AppFlagVersions, Long> {
     Optional<AppFlagVersions> findByFlag_IdAndVersion(Long flagId, Integer version);
+
 }
