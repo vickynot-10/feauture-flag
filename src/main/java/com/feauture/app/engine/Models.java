@@ -24,9 +24,6 @@ public class Models {
     public record FlagDefinition(String salt, String bucketBy, boolean defaultOn, List<Rule> rules) {
     }
 
-    public record EvaluationResult(boolean on, String reason, String ruleId, Integer bucket) {
-    }
-
     // new UserContext("u1", Map.of("country", "in"));
     public record UserContext(String id, Map<String, String> attributes) {
 
@@ -35,6 +32,52 @@ public class Models {
                 return null;
             }
             return attributes.get(name);
+        }
+    }
+
+    public record EvaluationResult(
+            boolean value,
+            Reason reason,
+            String ruleId,
+            List<MatchedCondition> matchedConditions,
+            Integer bucket,
+            List<RuleTrace> trace) {
+
+        public enum Reason {
+            NO_ATTRIBUTES,
+            RULE_MATCH,
+            ROLLOUT,
+            ROLLOUT_EMPTY,
+            DEFAULT
+        }
+
+        public enum RuleStatus {
+            MATCHED,
+            NO_MATCH,
+            SKIPPED_INVALID,
+            NOT_EVALUATED
+        }
+
+        public record MatchedCondition(
+                String attribute,
+                String operator,
+                List<String> values,
+                String actual) {
+        }
+
+        public record FailedCondition(
+                String attribute,
+                String operator,
+                List<String> values,
+                String actual) {
+        }
+
+        public record RuleTrace(
+                int index,
+                String ruleId,
+                RuleStatus status,
+                String note,
+                FailedCondition failedCondition) {
         }
     }
 }
