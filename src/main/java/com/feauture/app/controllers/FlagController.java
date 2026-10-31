@@ -56,7 +56,7 @@ public class FlagController {
     }
 
     @GetMapping("/get-definition")
-    public ApiResponse<FlagDefinitionRequest.Definition> getMethodName(@Valid FlagRequest.GetDefinition request) {
+    public ApiResponse<String> getMethodName(@Valid FlagRequest.GetDefinition request) {
         return flagService.getFlagDefintion(request);
     }
 

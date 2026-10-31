@@ -57,12 +57,12 @@ public class FlagService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<FlagDefinitionRequest.Definition> getFlagDefintion(FlagRequest.GetDefinition request) {
-        AppFlagVersions flagVersion = appFlagVersionRepository
-                .findByFlag_IdAndVersion(request.id(), request.version())
-                .orElseThrow(() -> new RuntimeException("Flag version not found"));
+    public ApiResponse<String> getFlagDefintion(FlagRequest.GetDefinition request) {
 
-        return ApiResponse.success("Fetched Successfully !", flagVersion.getDefinition());
+        String conditions = appFlagVersionRepository
+                .findConditionsByFlagIdAndVersion(request.id(), request.version());
+
+        return ApiResponse.success("Fetched Successfully !", conditions);
     }
 
     @Transactional(readOnly = true)
