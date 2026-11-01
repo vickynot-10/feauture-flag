@@ -122,7 +122,7 @@ public class FlagService {
         appFlagRepository.save(flag);
 
         insertVersion(flag, 1, defaultDefinition(), userId);
-        audit(flagKey, AuditAction.CREATE, userId, null, 1);
+        audit(flag.getId(), flagKey, AuditAction.CREATE, userId, null, 1);
         return ApiResponse.success("Flag Created Successfully !", null);
     }
 
@@ -147,7 +147,7 @@ public class FlagService {
 
         AppFlags flag = appFlagRepository.getReferenceById(request.id());
         insertVersion(flag, nextversion, request.definition(), userId);
-        audit(flag.getFlagKey(), AuditAction.UPDATE, userId, request.expectedVersion(), nextversion);
+        audit(flag.getId(), flag.getFlagKey(), AuditAction.UPDATE, userId, request.expectedVersion(), nextversion);
 
         return ApiResponse.success("Flag updated Successfully !", null);
     }
@@ -160,7 +160,7 @@ public class FlagService {
         }
 
         AppFlags flag = appFlagRepository.getReferenceById(id);
-        audit(flag.getFlagKey(), AuditAction.TOGGLE, userId, null, null);
+        audit(flag.getId(), flag.getFlagKey(), AuditAction.TOGGLE, userId, null, null);
 
         return ApiResponse.success("Flag Status updated Successfully !", null);
 
@@ -178,7 +178,7 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.NOT_FOUND, "Flag is Not Found !");
         }
 
-        audit(flagKey, AuditAction.DELETE, userId, lastVersion, null);
+        audit(id, flagKey, AuditAction.DELETE, userId, lastVersion, null);
         return ApiResponse.success("Flag Deleted Successfully !", null);
     }
 
@@ -194,9 +194,9 @@ public class FlagService {
 
     }
 
-    private void audit(String flagKey, AuditAction action, Long userId, Integer fromVersion, Integer toVersion) {
-        appAuditLogRepository.save(
-                new AppAuditLogs(flagKey, action, String.valueOf(userId), fromVersion, toVersion));
+    private void audit(Long flagId, String flagKey, AuditAction action, Long userId, Integer fromVersion,
+            Integer toVersion) {
+        appAuditLogRepository.save(new AppAuditLogs(flagId, flagKey, action, userId, fromVersion, toVersion));
     }
 
     public static String toFlagKey(String value) {

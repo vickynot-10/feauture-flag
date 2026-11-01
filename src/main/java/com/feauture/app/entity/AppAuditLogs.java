@@ -27,6 +27,9 @@ public class AppAuditLogs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "flag_id", updatable = false)
+    private Long flagId;
+
     @Column(name = "flag_key", nullable = false, updatable = false)
     private String flagKey;
 
@@ -35,7 +38,7 @@ public class AppAuditLogs {
     private AuditAction action;
 
     @Column(name = "actor_id", nullable = false, updatable = false)
-    private String actorId;
+    private Long actorId;
 
     @Column(name = "from_version", updatable = false)
     private Integer fromVersion;
@@ -46,7 +49,9 @@ public class AppAuditLogs {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    public AppAuditLogs(String flagKey, AuditAction action, String actorId, Integer fromVersion, Integer toVersion) {
+    public AppAuditLogs(Long flagId, String flagKey, AuditAction action, Long actorId, Integer fromVersion,
+            Integer toVersion) {
+        this.flagId = flagId;
         this.flagKey = flagKey;
         this.action = action;
         this.actorId = actorId;
