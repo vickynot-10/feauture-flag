@@ -35,49 +35,10 @@ public class Models {
         }
     }
 
-    public record EvaluationResult(
-            boolean value,
-            Reason reason,
-            String ruleId,
-            List<MatchedCondition> matchedConditions,
-            Integer bucket,
-            List<RuleTrace> trace) {
+    public record EvaluateResultObject(
+            Integer type,
+            String Message
 
-        public enum Reason {
-            NO_ATTRIBUTES,
-            RULE_MATCH,
-            ROLLOUT,
-            ROLLOUT_EMPTY,
-            DEFAULT
-        }
-
-        public enum RuleStatus {
-            MATCHED,
-            NO_MATCH,
-            SKIPPED_INVALID,
-            NOT_EVALUATED
-        }
-
-        public record MatchedCondition(
-                String attribute,
-                String operator,
-                List<String> values,
-                String actual) {
-        }
-
-        public record FailedCondition(
-                String attribute,
-                String operator,
-                List<String> values,
-                String actual) {
-        }
-
-        public record RuleTrace(
-                int index,
-                String ruleId,
-                RuleStatus status,
-                String note,
-                FailedCondition failedCondition) {
-        }
+    ) {
     }
 }

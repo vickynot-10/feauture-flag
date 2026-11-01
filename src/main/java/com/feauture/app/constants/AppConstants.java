@@ -19,4 +19,10 @@ public class AppConstants {
     // ENGINE
     public static final int MAX_BUCKETS = 10000;
 
+    // PLAYGROUND
+
+    public static final int SUCCEED = 1;
+    public static final int FAILED = 2;
+    public static final int SKIPPED = 3;
+
 }

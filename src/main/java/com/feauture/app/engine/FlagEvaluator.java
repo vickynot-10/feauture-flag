@@ -8,112 +8,79 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.feauture.app.constants.AppConstants;
+
 import com.feauture.app.dto.FlagDefinitionRequest.Condition;
 import com.feauture.app.dto.FlagDefinitionRequest.Rule;
 import com.feauture.app.dto.FlagDefinitionRequest.Slice;
-import com.feauture.app.engine.Models.EvaluationResult;
-import com.feauture.app.engine.Models.EvaluationResult.FailedCondition;
-import com.feauture.app.engine.Models.EvaluationResult.MatchedCondition;
-import com.feauture.app.engine.Models.EvaluationResult.Reason;
-import com.feauture.app.engine.Models.EvaluationResult.RuleStatus;
-import com.feauture.app.engine.Models.EvaluationResult.RuleTrace;
+import com.feauture.app.engine.Models.EvaluateResultObject;
 import com.google.common.hash.Hashing;
 
 @Component
 public class FlagEvaluator {
 
-    public EvaluationResult Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,
+    public boolean Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,
             List<Rule> rules,
             Map<String, String> attributes) {
-        List<RuleTrace> trace = new ArrayList<>();
-
+        List<EvaluateResultObject> result = new ArrayList<>();
         if (attributes == null || attributes.isEmpty()) {
-            addNotEvaluated(trace, rules, 0);
-            return new EvaluationResult(false, Reason.NO_ATTRIBUTES, null, List.of(), null, trace);
+            result.add(new EvaluateResultObject(
+                    AppConstants.FAILED, "Attributes are Empty"));
+            return false;
         }
 
         first: for (int i = 0; i < rules.size(); i++) {
             Rule current_rule = rules.get(i);
 
-            String invalidNote = invalidReason(current_rule);
-            if (invalidNote != null) {
-                trace.add(new RuleTrace(i, ruleIdOf(current_rule), RuleStatus.SKIPPED_INVALID, invalidNote, null));
+            // Skip if current rule is null or id is blank || conditions array is empty
+            if (shouldContinue(current_rule)) {
+                result.add(new EvaluateResultObject(
+                        AppConstants.SKIPPED,
+                        String.format("Skipping due to Rules are empty on %s", current_rule.id())));
                 continue;
             }
 
-            List<MatchedCondition> matched = new ArrayList<>();
-
             for (int j = 0; j < current_rule.conditions().size(); j++) {
                 Condition condition = current_rule.conditions().get(j);
+                boolean matchCondition = ConditionMatch(condition, attributes);
+                // break and go to next condition
+                if (!matchCondition) {
 
-                if (!ConditionMatch(condition, attributes)) {
-                    trace.add(new RuleTrace(i, current_rule.id(), RuleStatus.NO_MATCH, null,
-                            new FailedCondition(
-                                    condition.attribute(),
-                                    condition.operator().name(),
-                                    condition.values(),
-                                    attributes.get(condition.attribute()))));
                     continue first;
                 }
+            }
+            // if all condions match then we gonna return what serve we saved
 
-                matched.add(new MatchedCondition(
-                        condition.attribute(),
-                        condition.operator().name(),
-                        condition.values(),
-                        attributes.get(condition.attribute())));
+            // if null and rolllout is empty then false
+            if (current_rule.serve().variant() == null) {
+
+                List<Slice> rollouts = current_rule.serve().rollout();
+
+                if (rollouts == null || rollouts.isEmpty()) {
+                    return false;
+                }
+
+                int hashID = HashBucketID(flagKey, bucketValue, salt);
+
+                return RollOutUsers(rollouts, hashID);
             }
 
-            trace.add(new RuleTrace(i, current_rule.id(), RuleStatus.MATCHED, null, null));
-            addNotEvaluated(trace, rules, i + 1);
-
-            Boolean variant = current_rule.serve().variant();
-
-            if (variant != null) {
-                return new EvaluationResult(variant, Reason.RULE_MATCH, current_rule.id(), matched, null, trace);
-            }
-
-            List<Slice> rollouts = current_rule.serve().rollout();
-
-            if (rollouts == null || rollouts.isEmpty()) {
-                return new EvaluationResult(false, Reason.ROLLOUT_EMPTY, current_rule.id(), matched, null, trace);
-            }
-
-            int hashID = HashBucketID(flagKey, bucketValue, salt);
-
-            return new EvaluationResult(RollOutUsers(rollouts, hashID), Reason.ROLLOUT, current_rule.id(), matched,
-                    hashID, trace);
+            return current_rule.serve().variant();
         }
 
-        return new EvaluationResult(defaultnOn, Reason.DEFAULT, null, List.of(), null, trace);
+        // if none of rule matches
+        return defaultnOn;
     }
 
-    private void addNotEvaluated(List<RuleTrace> trace, List<Rule> rules, int start) {
-        for (int k = start; k < rules.size(); k++) {
-            trace.add(new RuleTrace(k, ruleIdOf(rules.get(k)), RuleStatus.NOT_EVALUATED, null, null));
-        }
-    }
-
-    private String ruleIdOf(Rule rule) {
-        return rule == null ? null : rule.id();
-    }
-
-    private String invalidReason(Rule rule) {
-        if (rule == null) {
-            return "Rule is empty";
-        }
-        if (rule.id() == null || rule.id().isBlank()) {
-            return "Rule has no id";
-        }
-        if (rule.conditions() == null || rule.conditions().isEmpty()) {
-            return "Rule has no conditions";
-        }
-        return null;
+    private boolean shouldContinue(Rule rule) {
+        return rule == null || rule.id().isBlank() || rule.conditions().isEmpty();
     }
 
     private boolean RollOutUsers(List<Slice> rollouts, int hashID) {
+
         int cumulativeWeight = 0;
 
         for (Slice rollout : rollouts) {
+
             cumulativeWeight += rollout.weight();
 
             if (hashID < cumulativeWeight) {
@@ -128,14 +95,15 @@ public class FlagEvaluator {
         String input = flagKey + ":" + salt + ":" + id;
         int hash = Hashing.murmur3_32_fixed().hashString(input, StandardCharsets.UTF_8).asInt();
         return Math.floorMod(hash, AppConstants.MAX_BUCKETS);
+
     }
 
     private boolean ConditionMatch(Condition condition, Map<String, String> attributes) {
+
         String attribute = condition.attribute();
         String matchInAttribute = attributes.get(attribute);
 
-        if (attribute == null || attribute.isEmpty() || matchInAttribute == null || matchInAttribute.isEmpty()
-                || condition.values() == null || condition.values().isEmpty()) {
+        if (attribute == null || attribute.isEmpty() || matchInAttribute == null || matchInAttribute.isEmpty()) {
             return false;
         }
 
@@ -152,6 +120,7 @@ public class FlagEvaluator {
             case LT -> compare(matchInAttribute, initialElement) < 0;
             default -> false;
         };
+
     }
 
     private static int compare(String actual, String expected) {
@@ -161,4 +130,5 @@ public class FlagEvaluator {
             return 0;
         }
     }
+
 }
