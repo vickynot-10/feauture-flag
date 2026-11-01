@@ -20,8 +20,11 @@ import com.feauture.app.dto.FlagDefinitionRequest;
 import com.feauture.app.dto.FlagRequest;
 import com.feauture.app.engine.FlagEvaluator;
 import com.feauture.app.engine.Models;
+import com.feauture.app.entity.AppAuditLogs;
 import com.feauture.app.entity.AppFlagVersions;
 import com.feauture.app.entity.AppFlags;
+import com.feauture.app.entity.AuditAction;
+import com.feauture.app.repository.AppAuditLogRepository;
 import com.feauture.app.repository.AppFlagRepository;
 import com.feauture.app.repository.AppFlagRepository.FlagItem;
 import com.feauture.app.repository.AppFlagVersionRepository;
@@ -36,6 +39,7 @@ public class FlagService {
 
     private final AppFlagRepository appFlagRepository;
     private final UserRepository userRepository;
+    private final AppAuditLogRepository appAuditLogRepository;
 
     private final ApplicationRepository applicationRepository;
     private final AppFlagVersionRepository appFlagVersionRepository;
@@ -83,7 +87,7 @@ public class FlagService {
         return appFlagRepository.findAllFlagVersions();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ApiResponse<Models.EvaluationResult> playgroundEditor(FlagRequest.playgroundBody request) {
         AppFlagVersions flag = appFlagVersionRepository.findByFlag_IdAndVersion(request.flagId(), request.version())
                 .orElseThrow(() -> new RuntimeException("Flag version not found"));
@@ -118,6 +122,7 @@ public class FlagService {
         appFlagRepository.save(flag);
 
         insertVersion(flag, 1, defaultDefinition(), userId);
+        audit(flagKey, AuditAction.CREATE, userId, null, 1);
         return ApiResponse.success("Flag Created Successfully !", null);
     }
 
@@ -140,7 +145,9 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "Flag was changed by someone else, reload and retry !");
         }
 
-        insertVersion(appFlagRepository.getReferenceById(request.id()), nextversion, request.definition(), userId);
+        AppFlags flag = appFlagRepository.getReferenceById(request.id());
+        insertVersion(flag, nextversion, request.definition(), userId);
+        audit(flag.getFlagKey(), AuditAction.UPDATE, userId, request.expectedVersion(), nextversion);
 
         return ApiResponse.success("Flag updated Successfully !", null);
     }
@@ -152,15 +159,26 @@ public class FlagService {
             throw ApiResponse.error(HttpStatus.CONFLICT, "Flag failed to update or May not found !");
         }
 
+        AppFlags flag = appFlagRepository.getReferenceById(id);
+        audit(flag.getFlagKey(), AuditAction.TOGGLE, userId, null, null);
+
         return ApiResponse.success("Flag Status updated Successfully !", null);
 
     }
 
     @Transactional
-    public ApiResponse<Void> deleteFlag(Long id) {
+    public ApiResponse<Void> deleteFlag(Long id, Long userId) {
+        AppFlags flag = appFlagRepository.findById(id)
+                .orElseThrow(() -> ApiResponse.error(HttpStatus.NOT_FOUND, "Flag is Not Found !"));
+
+        String flagKey = flag.getFlagKey();
+        Integer lastVersion = flag.getCurrentVersion();
+
         if (appFlagRepository.deleteFlag(id) == 0) {
             throw ApiResponse.error(HttpStatus.NOT_FOUND, "Flag is Not Found !");
         }
+
+        audit(flagKey, AuditAction.DELETE, userId, lastVersion, null);
         return ApiResponse.success("Flag Deleted Successfully !", null);
     }
 
@@ -174,6 +192,11 @@ public class FlagService {
         appVersion.setCreatedBy(userRepository.getReferenceById(userId));
         appFlagVersionRepository.save(appVersion);
 
+    }
+
+    private void audit(String flagKey, AuditAction action, Long userId, Integer fromVersion, Integer toVersion) {
+        appAuditLogRepository.save(
+                new AppAuditLogs(flagKey, action, String.valueOf(userId), fromVersion, toVersion));
     }
 
     public static String toFlagKey(String value) {

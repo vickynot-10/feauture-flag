@@ -77,8 +77,7 @@ public class FlagController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteFlag(@PathVariable @Positive Long id) {
-
-        return flagService.deleteFlag(id);
+    public ApiResponse<Void> deleteFlag(@PathVariable @Positive Long id, @RequestAttribute("userId") Long userId) {
+        return flagService.deleteFlag(id, userId);
     }
 }
