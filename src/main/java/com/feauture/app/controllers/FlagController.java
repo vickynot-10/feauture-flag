@@ -60,7 +60,7 @@ public class FlagController {
     }
 
     @PostMapping("/playground")
-    public ApiResponse<Boolean> editorPlayGround(
+    public ApiResponse<Models.EvaluationResult> editorPlayGround(
             @Valid @RequestBody FlagRequest.playgroundBody request) {
         return flagService.playgroundEditor(request);
     }

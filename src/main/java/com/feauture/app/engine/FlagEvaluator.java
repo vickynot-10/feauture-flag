@@ -13,74 +13,103 @@ import com.feauture.app.dto.FlagDefinitionRequest.Condition;
 import com.feauture.app.dto.FlagDefinitionRequest.Rule;
 import com.feauture.app.dto.FlagDefinitionRequest.Slice;
 import com.feauture.app.engine.Models.EvaluateResultObject;
+import com.feauture.app.engine.Models.EvaluationResult;
 import com.google.common.hash.Hashing;
 
 @Component
 public class FlagEvaluator {
 
-    public boolean Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,
+    public EvaluationResult Evaluate(String flagKey, String salt, String bucketValue, Boolean defaultnOn,
             List<Rule> rules,
             Map<String, String> attributes) {
-        List<EvaluateResultObject> result = new ArrayList<>();
+        List<EvaluateResultObject> trace = new ArrayList<>();
+
         if (attributes == null || attributes.isEmpty()) {
-            result.add(new EvaluateResultObject(
-                    AppConstants.FAILED, "Attributes are Empty"));
-            return false;
+            trace.add(new EvaluateResultObject(AppConstants.FAILED, null, "Attributes are empty"));
+            return new EvaluationResult(false, trace);
         }
 
         first: for (int i = 0; i < rules.size(); i++) {
             Rule current_rule = rules.get(i);
 
-            // Skip if current rule is null or id is blank || conditions array is empty
             if (shouldContinue(current_rule)) {
-                result.add(new EvaluateResultObject(
-                        AppConstants.SKIPPED,
-                        String.format("Skipping due to Rules are empty on %s", current_rule.id())));
+                String skippedId = current_rule == null ? null : current_rule.id();
+                trace.add(new EvaluateResultObject(AppConstants.SKIPPED, skippedId, skipReason(current_rule)));
                 continue;
             }
 
             for (int j = 0; j < current_rule.conditions().size(); j++) {
                 Condition condition = current_rule.conditions().get(j);
-                boolean matchCondition = ConditionMatch(condition, attributes);
-                // break and go to next condition
-                if (!matchCondition) {
 
+                if (!ConditionMatch(condition, attributes)) {
+                    trace.add(new EvaluateResultObject(
+                            AppConstants.FAILED,
+                            current_rule.id(),
+                            String.format("Condition not matched: %s %s %s",
+                                    condition.attribute(), condition.operator(), condition.values())));
                     continue first;
                 }
             }
-            // if all condions match then we gonna return what serve we saved
 
-            // if null and rolllout is empty then false
             if (current_rule.serve().variant() == null) {
-
                 List<Slice> rollouts = current_rule.serve().rollout();
 
                 if (rollouts == null || rollouts.isEmpty()) {
-                    return false;
+                    trace.add(new EvaluateResultObject(
+                            AppConstants.FAILED,
+                            current_rule.id(),
+                            "Conditions matched but rollout is empty"));
+                    return new EvaluationResult(false, trace);
                 }
 
                 int hashID = HashBucketID(flagKey, bucketValue, salt);
+                boolean served = RollOutUsers(rollouts, hashID);
 
-                return RollOutUsers(rollouts, hashID);
+                trace.add(new EvaluateResultObject(
+                        AppConstants.SUCCEED,
+                        current_rule.id(),
+                        String.format("All conditions matched, rollout bucket %d served %s", hashID, served)));
+                return new EvaluationResult(served, trace);
             }
 
-            return current_rule.serve().variant();
+            boolean served = current_rule.serve().variant();
+
+            trace.add(new EvaluateResultObject(
+                    AppConstants.SUCCEED,
+                    current_rule.id(),
+                    String.format("All conditions matched, served %s", served)));
+            return new EvaluationResult(served, trace);
         }
 
-        // if none of rule matches
-        return defaultnOn;
+        trace.add(new EvaluateResultObject(
+                AppConstants.SUCCEED,
+                null,
+                String.format("No rule matched, returned default %s", defaultnOn)));
+        return new EvaluationResult(defaultnOn, trace);
     }
 
     private boolean shouldContinue(Rule rule) {
-        return rule == null || rule.id().isBlank() || rule.conditions().isEmpty();
+        return rule == null
+                || rule.id() == null
+                || rule.id().isBlank()
+                || rule.conditions() == null
+                || rule.conditions().isEmpty();
+    }
+
+    private String skipReason(Rule rule) {
+        if (rule == null) {
+            return "Rule is null";
+        }
+        if (rule.id() == null || rule.id().isBlank()) {
+            return "Rule id is blank";
+        }
+        return String.format("Conditions are empty on %s", rule.id());
     }
 
     private boolean RollOutUsers(List<Slice> rollouts, int hashID) {
-
         int cumulativeWeight = 0;
 
         for (Slice rollout : rollouts) {
-
             cumulativeWeight += rollout.weight();
 
             if (hashID < cumulativeWeight) {
@@ -95,11 +124,9 @@ public class FlagEvaluator {
         String input = flagKey + ":" + salt + ":" + id;
         int hash = Hashing.murmur3_32_fixed().hashString(input, StandardCharsets.UTF_8).asInt();
         return Math.floorMod(hash, AppConstants.MAX_BUCKETS);
-
     }
 
     private boolean ConditionMatch(Condition condition, Map<String, String> attributes) {
-
         String attribute = condition.attribute();
         String matchInAttribute = attributes.get(attribute);
 
@@ -120,7 +147,6 @@ public class FlagEvaluator {
             case LT -> compare(matchInAttribute, initialElement) < 0;
             default -> false;
         };
-
     }
 
     private static int compare(String actual, String expected) {

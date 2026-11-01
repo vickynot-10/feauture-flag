@@ -8,7 +8,6 @@ public class Models {
         EQUALS, NOT_EQUALS, IN, NOT_IN, CONTAINS, STARTS_WITH, GT, LT
     }
 
-    // new Condition("country", Operator.IN, List.of("IN", "LK"))
     public record Condition(String attribute, Operator operator, List<String> values) {
     }
 
@@ -24,7 +23,6 @@ public class Models {
     public record FlagDefinition(String salt, String bucketBy, boolean defaultOn, List<Rule> rules) {
     }
 
-    // new UserContext("u1", Map.of("country", "in"));
     public record UserContext(String id, Map<String, String> attributes) {
 
         public String get(String name) {
@@ -37,8 +35,12 @@ public class Models {
 
     public record EvaluateResultObject(
             Integer type,
-            String Message
+            String ruleId,
+            String message) {
+    }
 
-    ) {
+    public record EvaluationResult(
+            boolean value,
+            List<EvaluateResultObject> trace) {
     }
 }

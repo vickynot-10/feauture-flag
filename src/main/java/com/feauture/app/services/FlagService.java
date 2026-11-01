@@ -84,13 +84,13 @@ public class FlagService {
     }
 
     @Transactional
-    public ApiResponse<Boolean> playgroundEditor(FlagRequest.playgroundBody request) {
+    public ApiResponse<Models.EvaluationResult> playgroundEditor(FlagRequest.playgroundBody request) {
         AppFlagVersions flag = appFlagVersionRepository.findByFlag_IdAndVersion(request.flagId(), request.version())
                 .orElseThrow(() -> new RuntimeException("Flag version not found"));
 
         var definition = flag.getDefinition();
 
-        boolean response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(), definition.salt(),
+        Models.EvaluationResult response = flagEvaluator.Evaluate(flag.getFlag().getFlagKey(), definition.salt(),
                 request.bucketValue(),
                 definition.defaultOn(), definition.rules(), request.attributes());
 
