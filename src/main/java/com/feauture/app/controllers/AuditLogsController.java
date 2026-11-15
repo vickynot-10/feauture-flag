@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.feauture.app.dto.ApiRequest;
 import com.feauture.app.dto.ApiResponse;
+import com.feauture.app.dto.AuditDiffResponse;
 import com.feauture.app.services.AuditService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,7 @@ public class AuditLogsController {
     }
 
     @GetMapping("/difference")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    public ApiResponse<AuditDiffResponse> getDiff(@RequestParam Long id) {
+        return auditService.getDiff(id);
     }
-
 }

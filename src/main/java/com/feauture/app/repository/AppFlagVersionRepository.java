@@ -1,9 +1,12 @@
 package com.feauture.app.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.feauture.app.entity.AppFlagVersions;
 
@@ -29,5 +32,13 @@ public interface AppFlagVersionRepository extends JpaRepository<AppFlagVersions,
             AND v.version = :version
             """, nativeQuery = true)
     String findConditionsByFlagIdAndVersion(Long flagId, Integer version);
+
+    @Query("""
+            select v from AppFlagVersions v
+            join fetch v.flag
+            join fetch v.createdBy
+            where v.flag.id = :flagId and v.version in :versions
+            """)
+    List<AppFlagVersions> findForDiff(@Param("flagId") Long flagId, @Param("versions") Collection<Integer> versions);
 
 }

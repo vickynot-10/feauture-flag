@@ -47,4 +47,5 @@ public interface AppAuditLogRepository extends JpaRepository<AppAuditLogs, Long>
             where lower(a.flagKey) like lower(concat('%', :search, '%'))
             """)
     Page<AuditItem> findAuditItems(@Param("search") String search, Pageable pageable);
+
 }
